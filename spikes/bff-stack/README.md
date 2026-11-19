@@ -51,7 +51,7 @@ Answering a 304 with `reply.code(304).send(null)` makes the zod serializer write
 cd spikes/storage/node && node gerar-base.ts
 cd ../../bff-stack/node
 node preparar.ts
-pnpm test
-pnpm typecheck
+pnpm testar          # spike tests need local data, so they are not part of CI
+pnpm checar-tipos
 node medir.ts
 ```

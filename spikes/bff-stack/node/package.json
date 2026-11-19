@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "preparar": "node preparar.ts",
-    "test": "vitest run",
+    "testar": "vitest run",
     "medir": "node medir.ts",
-    "typecheck": "tsc -p tsconfig.json"
+    "checar-tipos": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@duckdb/node-api": "2.0.0-r.1",
