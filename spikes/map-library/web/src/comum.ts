@@ -15,6 +15,14 @@ export const ESCALA: [number, number, number][] = [
   [47, 59, 148],
 ];
 
+export const ESCALA_SUAVE: [number, number, number][] = [
+  [230, 232, 240],
+  [197, 202, 220],
+  [154, 162, 194],
+  [107, 117, 159],
+  [65, 74, 120],
+];
+
 export interface Celula {
   h: string;
   n: number;
