@@ -1,0 +1,27 @@
+{
+  "name": "@mapa/spike-map-library",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extrair": "node extrair-pontos.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "medir": "node medir-fps.ts"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.4.1",
+    "@deck.gl/geo-layers": "^9.4.1",
+    "@deck.gl/layers": "^9.4.1",
+    "@deck.gl/mapbox": "^9.4.1",
+    "@mapa/core": "workspace:*",
+    "@mapa/spike-pipeline-runtime": "workspace:*",
+    "h3-js": "^4.5.0",
+    "maplibre-gl": "^6.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "vite": "^8.3.8"
+  }
+}
