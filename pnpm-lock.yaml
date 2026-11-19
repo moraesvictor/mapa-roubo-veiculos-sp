@@ -138,6 +138,19 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(yaml@2.9.1))
 
+  spikes/hotspot/node:
+    dependencies:
+      h3-js:
+        specifier: ^4.5.0
+        version: 4.5.0
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      vitest:
+        specifier: ^5.1.1
+        version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(yaml@2.9.1))
+
   spikes/map-library/web:
     dependencies:
       '@deck.gl/core':
