@@ -40,6 +40,20 @@ Base map alone with software GPU: 17.3 FPS. So the zones cost MapLibre about 20%
 - MapLibre 6 needs `setWorkerUrl` with the worker bundled as a separate file (see `src/comum.ts`).
 - Real-phone check still to do in the performance phase; SwiftShader is only a proxy.
 
+## Follow-up: colour scale (2026-11-19)
+
+The first scale (saturated anil, 80% opacity, drawn above everything) hid streets and place names. Feedback: "the colours are too saturated, the map disappears a bit". The page now has `?suave`, which becomes the default for the product:
+
+- Desaturated anil scale: `#E6E8F0`, `#C5CADC`, `#9AA2C2`, `#6B759F`, `#414A78` (top step still above 7:1 against white).
+- 60% fill opacity and a faint outline, so blocks and streets show through.
+- Zones inserted below the first symbol layer of the base map (`addLayer(layer, firstSymbolId)`), so street and place labels stay on top.
+
+| Before | After |
+|---|---|
+| ![before](capturas/antes-escala-saturada.jpg) | ![after](capturas/depois-escala-suave.jpg) |
+
+Final colours are still up for the design refinement pass.
+
 ## Reproduce
 
 ```bash
