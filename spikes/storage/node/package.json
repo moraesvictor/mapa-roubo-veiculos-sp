@@ -1,0 +1,21 @@
+{
+  "name": "@mapa/spike-storage",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gerar": "node gerar-base.ts",
+    "medir": "node medir.ts"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "2.0.0-r.1",
+    "@mapa/core": "workspace:*",
+    "@mapa/spike-pipeline-runtime": "workspace:*",
+    "h3-js": "^4.5.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1"
+  }
+}
