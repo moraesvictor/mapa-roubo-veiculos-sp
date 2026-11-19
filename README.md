@@ -29,7 +29,8 @@ pnpm dev
 | Command | What it does |
 |---|---|
 | `pnpm dev` | Runs web and BFF in watch mode |
-| `pnpm test` | Runs every package's tests |
+| `pnpm lint` | ESLint with TypeScript, React Hooks and jsx-a11y (strict) rules |
+| `pnpm test` | Runs every package's tests, including axe accessibility checks on the web app |
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm build` | Builds every package |
 
