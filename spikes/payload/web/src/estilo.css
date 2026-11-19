@@ -1,0 +1,27 @@
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, sans-serif;
+}
+
+#mapa {
+  position: absolute;
+  inset: 0;
+}
+
+#resultado {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 8px 12px;
+  max-width: 360px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
