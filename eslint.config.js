@@ -9,8 +9,12 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.strict,
   {
-    files: ["apps/bff/**/*.ts", "packages/**/*.ts", "*.js"],
+    files: ["apps/bff/**/*.ts", "packages/**/*.ts", "spikes/**/*.ts", "*.js"],
     languageOptions: { globals: globals.node },
+  },
+  {
+    files: ["spikes/**/*.ts"],
+    rules: { "@typescript-eslint/no-non-null-assertion": "off" },
   },
   {
     files: ["apps/web/**/*.{ts,tsx}"],

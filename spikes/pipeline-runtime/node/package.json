@@ -1,0 +1,15 @@
+{
+  "name": "@mapa/spike-pipeline-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "saxes": "^6.0.0",
+    "yauzl": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/yauzl": "^3.4.0"
+  }
+}
