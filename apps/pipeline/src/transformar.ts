@@ -1,5 +1,6 @@
 import {
   CAMPOS_PERMITIDOS,
+  normalizarTexto,
   classificarTipoVeiculo,
   periodoDaHora,
   RESOLUCAO_H3,
@@ -26,13 +27,7 @@ const PERIODO_SSP: Record<string, PeriodoDoDia> = {
 const EPOCA_EXCEL = Date.UTC(1899, 11, 30);
 const DIA_MS = 86_400_000;
 
-export const normalizar = (texto: string) =>
-  texto
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
+export const normalizar = normalizarTexto;
 
 const vazio = (v: string | undefined) => !v || v.trim() === "" || v.trim().toUpperCase() === "NULL";
 
@@ -62,7 +57,11 @@ export function tipoDeLocal(descricao: string | undefined): TipoDeLocal | null {
 
 export function ruaSemNumero(logradouro: string | undefined): string | null {
   if (vazio(logradouro)) return null;
-  const rua = normalizar(logradouro ?? "").replace(/,.*$/, "").trim();
+  const rua = normalizar(logradouro ?? "")
+    .replace(/,.*$/, "")
+    .replace(/^AV\.?\s+|^AV\.(?=\S)/, "AVENIDA ")
+    .replace(/^R\.\s*|^RUA:\s*/, "RUA ")
+    .trim();
   if (!rua || rua.startsWith("VEDACAO")) return null;
   return rua;
 }

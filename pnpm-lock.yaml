@@ -32,10 +32,31 @@ importers:
 
   apps/bff:
     dependencies:
+      '@duckdb/node-api':
+        specifier: 2.0.0-r.1
+        version: 2.0.0-r.1
+      '@hono/node-server':
+        specifier: ^2.1.9
+        version: 2.1.9(hono@4.13.19)
+      '@hono/zod-openapi':
+        specifier: ^1.6.3
+        version: 1.6.3(hono@4.13.19)(zod@4.6.7)
       '@mapa/core':
         specifier: workspace:*
         version: link:../../packages/core
+      h3-js:
+        specifier: ^4.5.0
+        version: 4.5.0
+      hono:
+        specifier: ^4.13.19
+        version: 4.13.19
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
+      '@mapa/pipeline':
+        specifier: workspace:*
+        version: link:../pipeline
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -127,6 +148,10 @@ importers:
         version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(yaml@2.9.1))
 
   packages/core:
+    dependencies:
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       typescript:
         specifier: ~6.0.3
