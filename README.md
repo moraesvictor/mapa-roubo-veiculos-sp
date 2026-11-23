@@ -10,6 +10,7 @@ Interactive map of car and motorcycle robberies and thefts in the city of São P
 |---|---|
 | `apps/web` | Front-end: Vite + React + TypeScript (D9) |
 | `apps/bff` | Backend for frontend: typed API consumed only by the web app (D11) |
+| `apps/pipeline` | Monthly batch: reads the SSP-SP spreadsheets and writes allow-listed records (D5, D14) |
 | `packages/core` | Shared domain types, filters and rules (D10) |
 
 ## Getting started
@@ -33,6 +34,7 @@ pnpm dev
 | `pnpm test` | Runs every package's tests, including axe accessibility checks on the web app |
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm build` | Builds every package |
+| `pnpm --filter @mapa/pipeline extrair` | Reads `data/raw/*.xlsx` and writes `data/tmp/pipeline/` (records + metadata) |
 
 ## Data and privacy
 
