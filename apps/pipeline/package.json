@@ -21,5 +21,9 @@
     "@types/yauzl": "^3.4.0",
     "typescript": "~6.0.3",
     "vitest": "^5.1.1"
+  },
+  "exports": {
+    "./carregar": "./src/carregar.ts",
+    "./zonas": "./src/zonas.ts"
   }
 }

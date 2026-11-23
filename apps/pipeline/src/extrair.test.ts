@@ -136,6 +136,13 @@ describe("local (D6, D22)", () => {
     expect(ruaSemNumero("Rua  São   Jorge")).toBe("RUA SAO JORGE");
     expect(ruaSemNumero("VEDAÇÃO DA DIVULGAÇÃO DOS DADOS RELATIVOS")).toBeNull();
     expect(ruaSemNumero("NULL")).toBeNull();
+    expect(ruaSemNumero("AV. PAULISTA")).toBe("AVENIDA PAULISTA");
+    expect(ruaSemNumero("AV.PAULISTA")).toBe("AVENIDA PAULISTA");
+    expect(ruaSemNumero("AV PAULISTA")).toBe("AVENIDA PAULISTA");
+    expect(ruaSemNumero("R. AUGUSTA")).toBe("RUA AUGUSTA");
+    expect(ruaSemNumero("RUA: AUGUSTA")).toBe("RUA AUGUSTA");
+    expect(ruaSemNumero("AVENIDA AVANHANDAVA")).toBe("AVENIDA AVANHANDAVA");
+    expect(ruaSemNumero("RUA RIO BRANCO")).toBe("RUA RIO BRANCO");
   });
 
   it("tipo de local em 3 grupos, residência escondida em outros", () => {

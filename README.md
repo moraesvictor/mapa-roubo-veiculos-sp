@@ -23,7 +23,8 @@ pnpm dev
 ```
 
 - Web: http://localhost:5173
-- BFF: http://localhost:3001/health
+- BFF: http://localhost:3001/health (needs `data/tmp/pipeline/mapa.duckdb`; run the pipeline first or set `DADOS`)
+- API docs (OpenAPI 3.1): http://localhost:3001/openapi.json
 
 ## Scripts
 
