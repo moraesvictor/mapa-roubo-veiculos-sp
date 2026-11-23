@@ -46,6 +46,34 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(yaml@2.9.1))
 
+  apps/pipeline:
+    dependencies:
+      '@mapa/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      h3-js:
+        specifier: ^4.5.0
+        version: 4.5.0
+      saxes:
+        specifier: ^6.0.0
+        version: 6.0.0
+      yauzl:
+        specifier: ^3.4.0
+        version: 3.4.0
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/yauzl':
+        specifier: ^3.4.0
+        version: 3.4.0
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.1.1
+        version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(yaml@2.9.1))
+
   apps/web:
     dependencies:
       '@fontsource-variable/inter':
