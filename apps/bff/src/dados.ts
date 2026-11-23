@@ -61,7 +61,7 @@ export async function abrirDados(arquivo: string) {
       type: "Feature" as const,
       id: h3,
       properties: { h3 },
-      geometry: { type: "Polygon" as const, coordinates: [cellToBoundary(h3, true).map(([lon, lat]) => [Math.round(lon * 1e5) / 1e5, Math.round(lat * 1e5) / 1e5])] },
+      geometry: { type: "Polygon" as const, coordinates: [cellToBoundary(h3, true).map(([lon, lat]): [number, number] => [Math.round(lon * 1e5) / 1e5, Math.round(lat * 1e5) / 1e5])] },
     })),
   };
 

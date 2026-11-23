@@ -58,6 +58,19 @@ export const RespostaZonas = z.object({
 });
 export type RespostaZonas = z.infer<typeof RespostaZonas>;
 
+export const RespostaGeometria = z.object({
+  type: z.literal("FeatureCollection"),
+  features: z.array(
+    z.object({
+      type: z.literal("Feature"),
+      id: z.string(),
+      properties: z.object({ h3: z.string() }),
+      geometry: z.object({ type: z.literal("Polygon"), coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))) }),
+    }),
+  ),
+});
+export type RespostaGeometria = z.infer<typeof RespostaGeometria>;
+
 export const DIRECOES = ["norte", "leste", "sul", "oeste"] as const;
 export type Direcao = (typeof DIRECOES)[number];
 

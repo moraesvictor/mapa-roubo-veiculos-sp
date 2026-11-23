@@ -1,0 +1,146 @@
+.inicio {
+  min-height: 100%;
+  padding-bottom: var(--espaco-8);
+  background: var(--cor-superficie-fundo);
+}
+
+.conteudo {
+  display: grid;
+  gap: var(--espaco-4);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--espaco-6) var(--espaco-4) 0;
+}
+
+.destaque {
+  color: var(--cor-texto-invertido);
+  background: var(--cor-marca-principal);
+}
+
+.destaque .conteudo {
+  gap: var(--espaco-3);
+  padding-bottom: var(--espaco-6);
+}
+
+.destaque h1 {
+  max-width: 720px;
+  font: var(--texto-titulo-pagina);
+}
+
+.sobretitulo {
+  font: var(--texto-legenda);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.apoio {
+  max-width: 640px;
+}
+
+.conteudo h2 {
+  font: var(--texto-titulo-bloco);
+}
+
+.cartoes {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.cartao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4);
+  color: var(--cor-texto-principal);
+  text-decoration: none;
+  background: var(--cor-superficie-padrao);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-cartao);
+}
+
+.cartao:hover {
+  border-color: var(--cor-borda-forte);
+}
+
+.selo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: var(--cor-marca-principal);
+  background: var(--cor-marca-suave);
+  border-radius: 999px;
+}
+
+.textoDoCartao {
+  display: grid;
+  flex: 1;
+  gap: var(--espaco-1);
+}
+
+.textoDoCartao strong {
+  font: var(--texto-titulo-tela);
+}
+
+.textoDoCartao span {
+  color: var(--cor-texto-secundario);
+}
+
+.atalhos {
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.atalhos a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--alvo-de-toque);
+  padding: var(--espaco-3) 0;
+  font: var(--texto-titulo-bloco);
+  text-decoration: none;
+  border-bottom: 1px solid var(--cor-borda-padrao);
+}
+
+.aviso {
+  display: flex;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  font: var(--texto-legenda);
+  background: var(--cor-marca-suave);
+  border-radius: var(--raio-cartao);
+}
+
+.aviso svg {
+  flex: none;
+  color: var(--cor-marca-principal);
+}
+
+@media (min-width: 1024px) {
+  .destaque .conteudo {
+    padding: var(--espaco-12) var(--espaco-4);
+  }
+
+  .destaque h1 {
+    font-size: 32px;
+  }
+
+  .cartoes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .atalhos {
+    display: flex;
+    gap: var(--espaco-8);
+  }
+
+  .atalhos a {
+    border: 0;
+  }
+
+  .aviso {
+    font: var(--texto-corpo-padrao);
+  }
+}

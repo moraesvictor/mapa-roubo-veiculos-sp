@@ -7,6 +7,7 @@ import {
   RESOLUCAO_H3,
   RespostaArea,
   RespostaErro,
+  RespostaGeometria,
   RespostaRua,
   RespostaSobre,
   RespostaZonas,
@@ -35,7 +36,7 @@ const rotaGeometria = createRoute({
   method: "get",
   path: "/v1/geometria",
   summary: "Contorno de todas as células que podem aparecer no mapa (GeoJSON); muda só a cada release",
-  responses: { ...json(z.object({ type: z.literal("FeatureCollection"), features: z.array(z.any()) }), "GeoJSON"), ...naoMudou },
+  responses: { ...json(RespostaGeometria, "GeoJSON"), ...naoMudou },
 });
 
 const rotaArea = createRoute({

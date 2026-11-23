@@ -1,0 +1,56 @@
+.mapa {
+  position: absolute;
+  inset: 0;
+  background: var(--cor-mapa-terreno);
+}
+
+.tela {
+  position: absolute;
+  inset: 0;
+}
+
+.controles {
+  position: absolute;
+  right: var(--espaco-4);
+  top: 172px;
+  z-index: 2;
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.zoom {
+  display: grid;
+  background: var(--cor-superficie-padrao);
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.controle {
+  display: grid;
+  place-items: center;
+  width: var(--alvo-de-toque);
+  height: var(--alvo-de-toque);
+  font-size: 22px;
+  line-height: 1;
+  background: var(--cor-superficie-padrao);
+  border: 0;
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-flutuante);
+  cursor: pointer;
+}
+
+.zoom .controle {
+  box-shadow: none;
+}
+
+.zoom .controle + .controle {
+  border-top: 1px solid var(--cor-borda-padrao);
+  border-radius: 0 0 var(--raio-cartao) var(--raio-cartao);
+}
+
+@media (min-width: 1024px) {
+  .controles {
+    top: auto;
+    bottom: 64px;
+  }
+}
