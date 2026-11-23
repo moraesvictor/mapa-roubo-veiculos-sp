@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@duckdb/node-api": "2.0.0-r.1",
     "@mapa/core": "workspace:*",
     "h3-js": "^4.5.0",
     "saxes": "^6.0.0",
