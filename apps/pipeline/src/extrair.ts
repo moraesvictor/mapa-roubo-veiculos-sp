@@ -11,6 +11,7 @@ export interface Metadados {
   periodoOrigem: { calculado: number; ssp: number; horaIncerta: number };
   lotes: { grupos: number; registros: number };
   foraDoMapa: number;
+  familias: { distintas: number; modeloNaoIdentificado: number };
 }
 
 export interface Fonte {
@@ -62,6 +63,10 @@ export async function extrairOcorrencias(fontes: readonly Fonte[]): Promise<{ oc
       },
       lotes: { grupos: lotes.size, registros: ocorrencias.filter((o) => !o.local_confiavel).length },
       foraDoMapa: ocorrencias.filter((o) => !o.h3 || !o.local_confiavel).length,
+      familias: {
+        distintas: new Set(ocorrencias.map((o) => o.familia)).size,
+        modeloNaoIdentificado: ocorrencias.filter((o) => o.familia.endsWith("NAO IDENTIFICADO") || o.familia.endsWith("NAO IDENTIFICADO)")).length,
+      },
     },
   };
 }

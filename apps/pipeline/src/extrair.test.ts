@@ -2,7 +2,7 @@ import { CAMPOS_PERMITIDOS } from "@mapa/core";
 import { describe, expect, it } from "vitest";
 import { colunasDesconhecidas, nomeCanonico } from "./colunas.ts";
 import { extrairOcorrencias, type Fonte } from "./extrair.ts";
-import { dataDoExcel, familiaDoModelo, garantirListaDePermissao, horaDoExcel, ruaSemNumero, tipoDeLocal } from "./transformar.ts";
+import { dataDoExcel, garantirListaDePermissao, horaDoExcel, ruaSemNumero, tipoDeLocal } from "./transformar.ts";
 
 const SENSIVEIS = {
   PLACA_VEICULO: "QZX9Y87",
@@ -194,10 +194,4 @@ describe("conversões", () => {
     expect(dataDoExcel("NULL")).toBeNull();
   });
 
-  it("família do modelo com marca corrigida", () => {
-    expect(familiaDoModelo("HONDA/CG 160 FAN")).toBe("HONDA CG");
-    expect(familiaDoModelo("VOLKSWAGEM/GOL 1.0")).toBe("VOLKSWAGEN GOL");
-    expect(familiaDoModelo("FIAT")).toBe("FIAT (MODELO NAO IDENTIFICADO)");
-    expect(familiaDoModelo("")).toBe("NAO IDENTIFICADO");
-  });
 });

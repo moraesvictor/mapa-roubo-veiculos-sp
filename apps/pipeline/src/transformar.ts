@@ -11,6 +11,7 @@ import {
 } from "@mapa/core";
 import { latLngToCell } from "h3-js";
 import type { ColunaUsada } from "./colunas.ts";
+import { familiaDoModelo } from "./familias.ts";
 
 export type Campos = ReadonlyMap<ColunaUsada, string>;
 
@@ -22,7 +23,6 @@ const PERIODO_SSP: Record<string, PeriodoDoDia> = {
   "A NOITE": "noite",
   "EM HORA INCERTA": "hora-incerta",
 };
-const MARCAS_CORRIGIDAS: Record<string, string> = { VOLKSWAGEM: "VOLKSWAGEN", VOLKWAGEN: "VOLKSWAGEN", "VW": "VOLKSWAGEN" };
 const EPOCA_EXCEL = Date.UTC(1899, 11, 30);
 const DIA_MS = 86_400_000;
 
@@ -50,14 +50,6 @@ export function horaDoExcel(valor: string | undefined): number | null {
   const fracao = Number(valor);
   if (!Number.isFinite(fracao) || fracao < 0 || fracao >= 1) return null;
   return Math.min(23, Math.floor(fracao * 24 + 1e-9));
-}
-
-export function familiaDoModelo(marcaModelo: string | undefined): string {
-  const [marcaBruta = "", modelo = ""] = normalizar(marcaModelo ?? "").split("/");
-  const marca = MARCAS_CORRIGIDAS[marcaBruta.trim()] ?? marcaBruta.trim();
-  const primeiro = modelo.trim().split(" ")[0] ?? "";
-  if (!marca) return "NAO IDENTIFICADO";
-  return primeiro ? `${marca} ${primeiro}` : `${marca} (MODELO NAO IDENTIFICADO)`;
 }
 
 export function tipoDeLocal(descricao: string | undefined): TipoDeLocal | null {
@@ -124,7 +116,7 @@ export function extrair(c: Campos, vistos: Set<string>): Resultado {
       ocorrencia: {
         tipo,
         veiculo,
-        familia: familiaDoModelo(c.get("DESCR_MARCA_VEICULO")),
+        familia: familiaDoModelo(normalizar(c.get("DESCR_MARCA_VEICULO") ?? ""), veiculo),
         data,
         tipo_dia: tipoDeDia(new Date(`${data}T12:00:00Z`)),
         periodo,
