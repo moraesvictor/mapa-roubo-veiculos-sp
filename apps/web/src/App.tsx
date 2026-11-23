@@ -2,15 +2,17 @@ import { useState } from "react";
 import { createBrowserRouter, createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
 import { Moldura } from "./componentes/Moldura.tsx";
 import { EmConstrucao } from "./paginas/EmConstrucao.tsx";
+import { Inicio } from "./paginas/Inicio.tsx";
+import { Lugar } from "./paginas/lugar/Lugar.tsx";
+import { Tabela } from "./paginas/lugar/Tabela.tsx";
 
 export const ROTAS: RouteObject[] = [
   {
     element: <Moldura />,
     children: [
-      {
-        index: true,
-        element: <EmConstrucao titulo="Onde e quando há mais registros" descricao="Busque um endereço, CEP ou região pra ver as ocorrências registradas por perto." />,
-      },
+      { index: true, element: <Inicio /> },
+      { path: "lugar", element: <Lugar /> },
+      { path: "lugar/tabela", element: <Tabela /> },
       {
         path: "meu-veiculo",
         element: <EmConstrucao titulo="Meu veículo" descricao="Veja se o seu modelo aparece muito nos registros de roubo e furto." />,

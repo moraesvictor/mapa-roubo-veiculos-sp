@@ -1,15 +1,17 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation } from "react-router";
 import { Icone, type NomeDeIcone } from "../icones/Icone.tsx";
 import estilos from "./Moldura.module.css";
 
-export const ABAS: { caminho: string; rotulo: string; icone: NomeDeIcone }[] = [
-  { caminho: "/", rotulo: "Lugar", icone: "mapa" },
+export const ABAS: { caminho: string; rotulo: string; icone: NomeDeIcone; prefixos?: string[] }[] = [
+  { caminho: "/lugar", rotulo: "Lugar", icone: "mapa", prefixos: ["/", "/lugar"] },
   { caminho: "/meu-veiculo", rotulo: "Meu veículo", icone: "veiculo" },
   { caminho: "/ranking", rotulo: "Ranking", icone: "grafico" },
   { caminho: "/sobre", rotulo: "Sobre", icone: "info" },
 ];
 
 export function Moldura() {
+  const { pathname } = useLocation();
+  const ativa = (aba: (typeof ABAS)[number]) => (aba.prefixos ?? [aba.caminho]).some((p) => (p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(`${p}/`)));
   return (
     <div className={estilos.moldura}>
       <a className={estilos.pular} href="#conteudo">
@@ -26,7 +28,7 @@ export function Moldura() {
           <ul>
             {ABAS.map((aba) => (
               <li key={aba.caminho}>
-                <NavLink to={aba.caminho} end className={estilos.aba ?? ""}>
+                <NavLink to={aba.caminho} className={estilos.aba ?? ""} aria-current={ativa(aba) ? "page" : undefined}>
                   <Icone nome={aba.icone} />
                   <span>{aba.rotulo}</span>
                 </NavLink>
