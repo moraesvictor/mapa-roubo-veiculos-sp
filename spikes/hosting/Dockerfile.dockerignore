@@ -1,0 +1,7 @@
+**
+!spikes/hosting/imagem/package.json
+!spikes/hosting/imagem/bff.ts
+!spikes/bff-stack/node/app-hono.ts
+!spikes/bff-stack/node/contrato.ts
+!spikes/bff-stack/node/dados.ts
+!data/tmp/bff.duckdb
