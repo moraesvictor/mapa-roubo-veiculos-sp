@@ -1,0 +1,23 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  min-height: 48px;
+  padding: 0 var(--espaco-4);
+  font: var(--texto-titulo-bloco);
+  border-radius: var(--raio-cartao);
+  cursor: pointer;
+}
+
+.secundario {
+  color: var(--cor-texto-principal);
+  background: var(--cor-superficie-padrao);
+  border: 1px solid var(--cor-borda-forte);
+}
+
+.principal {
+  color: var(--cor-texto-invertido);
+  background: var(--cor-marca-principal);
+  border: 1px solid var(--cor-marca-principal);
+}

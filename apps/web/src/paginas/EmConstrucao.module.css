@@ -1,0 +1,16 @@
+.pagina {
+  display: grid;
+  gap: var(--espaco-3);
+  max-width: 640px;
+  padding: var(--espaco-6) var(--espaco-4);
+}
+
+.pagina h1 {
+  font: var(--texto-titulo-pagina);
+}
+
+.aviso {
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-superficie-nota);
+  border-radius: var(--raio-cartao);
+}

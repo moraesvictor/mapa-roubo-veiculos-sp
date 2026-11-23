@@ -1,0 +1,27 @@
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  font: var(--texto-rotulo-chip);
+  color: var(--cor-texto-principal);
+  background: var(--cor-superficie-padrao);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-chip);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip::before {
+  content: "";
+  position: absolute;
+  inset: calc((var(--alvo-de-toque) - 40px) / -2) 0;
+}
+
+.chip[aria-pressed="true"] {
+  color: var(--cor-texto-invertido);
+  background: var(--cor-marca-principal);
+  border-color: var(--cor-marca-principal);
+}
