@@ -1,0 +1,6 @@
+{"imagemMB":475}
+{"rodada":1,"perfil":"256 MB, 1 CPU","primeiraRespostaMs":1242,"ocioso":{"atualMB":55,"picoMB":59},"carga":{"reqPorSegundo":29,"p50ms":689,"p95ms":857,"erros":0},"depoisDaCarga":{"atualMB":107,"picoMB":111},"oom":"false"}
+{"rodada":1,"perfil":"256 MB, 1/4 CPU","primeiraRespostaMs":3969,"ocioso":{"atualMB":59,"picoMB":63},"carga":{"reqPorSegundo":7,"p50ms":3002,"p95ms":3801,"erros":0},"depoisDaCarga":{"atualMB":96,"picoMB":109},"oom":"false"}
+{"rodada":2,"perfil":"256 MB, 1 CPU","primeiraRespostaMs":1113,"ocioso":{"atualMB":57,"picoMB":61},"carga":{"reqPorSegundo":31,"p50ms":657,"p95ms":828,"erros":0},"depoisDaCarga":{"atualMB":94,"picoMB":109},"oom":"false"}
+{"rodada":2,"perfil":"256 MB, 1/4 CPU","primeiraRespostaMs":3384,"ocioso":{"atualMB":63,"picoMB":67},"carga":{"reqPorSegundo":6,"p50ms":3102,"p95ms":4012,"erros":0},"depoisDaCarga":{"atualMB":102,"picoMB":111},"oom":"false"}
+{"rodada":3,"perfil":"256 MB, 1 CPU","primeiraRespostaMs":1140,"ocioso":{"atualMB":58,"picoMB":61},"carga":{"reqPorSegundo":28,"p50ms":706,"p95ms":892,"erros":0},"depoisDaCarga":{"atualMB":101,"picoMB":109},"oom":"false"}
