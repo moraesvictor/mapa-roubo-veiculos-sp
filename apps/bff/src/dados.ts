@@ -111,9 +111,14 @@ export async function abrirDados(arquivo: string) {
     };
   }
 
-  async function rua(nome: string, f: Filtros): Promise<RespostaRua> {
+  async function rua(nome: string, f: Filtros, celulas: readonly string[] = []): Promise<RespostaRua> {
     const filtro = filtroSql(f, true);
-    const [linha] = await ler<{ n: number }>(`SELECT count(*)::INTEGER AS n FROM ocorrencias WHERE ${filtro.sql} AND rua = $${filtro.parametros.length + 1}`, [...filtro.parametros, normalizarTexto(nome)]);
+    const proximo = filtro.parametros.length + 1;
+    const vizinhanca = [...new Set(celulas.flatMap((c) => gridDisk(c, 1)))];
+    const [linha] = await ler<{ n: number }>(
+      `SELECT count(*)::INTEGER AS n FROM ocorrencias WHERE ${filtro.sql} AND rua = $${proximo}${vizinhanca.length ? ` AND list_contains($${proximo + 1}, h3)` : ""}`,
+      [...filtro.parametros, normalizarTexto(nome), ...(vizinhanca.length ? [listValue(vizinhanca)] : [])],
+    );
     return { ...janela, nome, total: contagem(linha?.n ?? 0) };
   }
 

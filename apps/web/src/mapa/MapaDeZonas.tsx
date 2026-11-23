@@ -33,6 +33,7 @@ interface Props {
   geometria: RespostaGeometria;
   zonas: RespostaZonas | undefined;
   selecionada: string | null;
+  aproximar?: boolean;
   aoSelecionar: (h3: string) => void;
 }
 
@@ -43,7 +44,7 @@ function centroDe(geometria: RespostaGeometria, h3: string): [number, number] | 
   return [somaLon / anel.length, somaLat / anel.length];
 }
 
-export default function MapaDeZonas({ geometria, zonas, selecionada, aoSelecionar }: Props) {
+export default function MapaDeZonas({ geometria, zonas, selecionada, aproximar = false, aoSelecionar }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const aoSelecionarRef = useRef(aoSelecionar);
@@ -133,10 +134,10 @@ export default function MapaDeZonas({ geometria, zonas, selecionada, aoSeleciona
     if (selecionada) {
       mapa.setFeatureState({ source: "zonas", id: selecionada }, { selecionada: true });
       const centro = centroDe(geometria, selecionada);
-      if (centro && !mapa.getBounds().contains(centro)) mapa.easeTo({ center: centro, zoom: Math.max(mapa.getZoom(), 13) });
+      if (centro && (aproximar || !mapa.getBounds().contains(centro))) mapa.easeTo({ center: centro, zoom: Math.max(mapa.getZoom(), 13), padding: mapa.getContainer().clientWidth >= 700 ? 0 : { top: 0, bottom: Math.round(mapa.getContainer().clientHeight * 0.5), left: 0, right: 0 } });
     }
     selecaoAnterior.current = selecionada;
-  }, [pronto, selecionada, geometria]);
+  }, [pronto, selecionada, geometria, aproximar]);
 
   const centralizar = () => {
     if (!("geolocation" in navigator)) return;

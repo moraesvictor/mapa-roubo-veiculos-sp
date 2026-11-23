@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { RespostaArea, RespostaRua, RespostaSobre, RespostaZonas, type Ocorrencia } from "@mapa/core";
+import { RespostaArea, RespostaCep, RespostaRua, RespostaSobre, RespostaZonas, type Ocorrencia } from "@mapa/core";
 import { carregar } from "@mapa/pipeline/carregar";
 import { calcularZonas, janelaDe12Meses } from "@mapa/pipeline/zonas";
 import { cellToLatLng, gridDisk, latLngToCell } from "h3-js";
@@ -69,7 +69,12 @@ beforeAll(async () => {
     },
   });
   base = await abrirDados(arquivo);
-  app = criarApp(base);
+  app = criarApp(base, async (cep) => {
+    if (cep === "01310200") return { logradouro: "Avenida Paulista", bairro: "Bela Vista", localidade: "São Paulo", uf: "SP" };
+    if (cep === "13010000") return { logradouro: "Rua X", bairro: "Centro", localidade: "Campinas", uf: "SP" };
+    if (cep === "99999999") return { erro: "true" };
+    throw new Error("fora do ar");
+  });
 });
 
 afterAll(async () => {
@@ -145,6 +150,22 @@ describe("BFF", () => {
     expect((await get("/v1/rua?nome=ab")).status).toBe(400);
   });
 
+  it("rua: com as células do trecho, conta só ali e no entorno", async () => {
+    const longe = RespostaRua.parse(await (await get(`/v1/rua?nome=Rua%20Augusta&celulas=${latLngToCell(-23.7, -46.75, 8)}`)).json());
+    expect(longe.total).toBeNull();
+    const perto = RespostaRua.parse(await (await get(`/v1/rua?nome=Rua%20Augusta&celulas=${CENTRO}`)).json());
+    expect(perto.total).toBeGreaterThanOrEqual(5);
+    expect((await get("/v1/rua?nome=Rua%20Augusta&celulas=xyz")).status).toBe(400);
+  });
+
+  it("cep: rua e bairro, se é em SP, 404 e 502", async () => {
+    expect(RespostaCep.parse(await (await get("/v1/cep/01310200")).json())).toEqual({ cep: "01310200", logradouro: "Avenida Paulista", bairro: "Bela Vista", emSaoPaulo: true });
+    expect(RespostaCep.parse(await (await get("/v1/cep/13010000")).json()).emSaoPaulo).toBe(false);
+    expect((await get("/v1/cep/99999999")).status).toBe(404);
+    expect((await get("/v1/cep/12345678")).status).toBe(502);
+    expect((await get("/v1/cep/0131")).status).toBe(400);
+  });
+
   it("sobre: metadados da release", async () => {
     const corpo = RespostaSobre.parse(await (await get("/v1/sobre")).json());
     expect(corpo.foraDoMapa.lotes).toBe(40);
@@ -153,7 +174,7 @@ describe("BFF", () => {
 
   it("publica o OpenAPI gerado do contrato", async () => {
     const doc = (await (await get("/openapi.json")).json()) as { paths: Record<string, unknown> };
-    expect(Object.keys(doc.paths).sort()).toEqual(["/v1/area/{h3}", "/v1/geometria", "/v1/rua", "/v1/sobre", "/v1/zonas"]);
+    expect(Object.keys(doc.paths).sort()).toEqual(["/v1/area/{h3}", "/v1/cep/{cep}", "/v1/geometria", "/v1/rua", "/v1/sobre", "/v1/zonas"]);
   });
 
   it("404 em JSON", async () => {

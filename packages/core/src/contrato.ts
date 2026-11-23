@@ -87,7 +87,20 @@ export type RespostaArea = z.infer<typeof RespostaArea>;
 
 export const ConsultaDeRua = ConsultaDeFiltros.extend({
   nome: z.string().min(3).max(120).describe("Nome da rua como aparece na busca, ex.: Avenida Paulista"),
+  celulas: z
+    .string()
+    .regex(/^[0-9a-f]{15}(,[0-9a-f]{15}){0,199}$/)
+    .optional()
+    .describe("Células H3 do trecho encontrado na busca, separadas por vírgula; conta só ali e no entorno imediato (ruas com o mesmo nome em outro bairro ficam de fora)"),
 });
+
+export const RespostaCep = z.object({
+  cep: z.string(),
+  logradouro: z.string().nullable(),
+  bairro: z.string().nullable(),
+  emSaoPaulo: z.boolean(),
+});
+export type RespostaCep = z.infer<typeof RespostaCep>;
 
 export const RespostaRua = z.object({
   ...Janela,

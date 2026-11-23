@@ -1,0 +1,123 @@
+.pagina {
+  display: grid;
+  gap: var(--espaco-4);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--espaco-4);
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.topo h1 {
+  font: var(--texto-titulo-tela);
+}
+
+.voltar {
+  display: grid;
+  place-items: center;
+  width: var(--alvo-de-toque);
+  height: var(--alvo-de-toque);
+  color: var(--cor-texto-principal);
+}
+
+.campo {
+  position: relative;
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.campo label {
+  font: var(--texto-rotulo-campo);
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 52px;
+  padding: 0 var(--espaco-2) 0 var(--espaco-4);
+  border: 2px solid var(--cor-foco);
+  border-radius: var(--raio-cartao);
+}
+
+.caixa input {
+  flex: 1;
+  min-width: 0;
+  font: var(--texto-corpo-campo);
+  background: none;
+  border: 0;
+  outline: none;
+}
+
+.caixa:focus-within {
+  box-shadow: 0 0 0 3px var(--cor-marca-suave);
+}
+
+.limpar {
+  display: grid;
+  place-items: center;
+  width: var(--alvo-de-toque);
+  height: var(--alvo-de-toque);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.sugestoes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.sugestao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 64px;
+  padding: var(--espaco-2) var(--espaco-4);
+  cursor: pointer;
+}
+
+.sugestao + .sugestao {
+  border-top: 1px solid var(--cor-borda-padrao);
+}
+
+.sugestao[aria-selected="true"],
+.sugestao:hover {
+  background: var(--cor-marca-suave);
+}
+
+.sugestao > span {
+  display: grid;
+}
+
+.sugestao strong {
+  font: var(--texto-titulo-bloco);
+}
+
+.sugestao span span {
+  font: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
+
+.status:empty {
+  display: none;
+}
+
+.status,
+.nota,
+.ou {
+  font: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
+
+.caixa input::-webkit-search-cancel-button {
+  appearance: none;
+}

@@ -5,6 +5,7 @@ import { EmConstrucao } from "./paginas/EmConstrucao.tsx";
 import { Inicio } from "./paginas/Inicio.tsx";
 import { Lugar } from "./paginas/lugar/Lugar.tsx";
 import { Tabela } from "./paginas/lugar/Tabela.tsx";
+import { Busca } from "./paginas/lugar/Busca.tsx";
 
 export const ROTAS: RouteObject[] = [
   {
@@ -13,6 +14,7 @@ export const ROTAS: RouteObject[] = [
       { index: true, element: <Inicio /> },
       { path: "lugar", element: <Lugar /> },
       { path: "lugar/tabela", element: <Tabela /> },
+      { path: "lugar/busca", element: <Busca /> },
       {
         path: "meu-veiculo",
         element: <EmConstrucao titulo="Meu veículo" descricao="Veja se o seu modelo aparece muito nos registros de roubo e furto." />,

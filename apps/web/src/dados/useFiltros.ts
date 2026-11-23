@@ -5,9 +5,11 @@ import { useSearchParams } from "react-router";
 const CHAVES_DE_FILTRO = ["veiculo", "tipo", "dia", "periodo"] as const;
 
 export function lerFiltros(params: URLSearchParams): Filtros {
-  const bruto = Object.fromEntries(CHAVES_DE_FILTRO.flatMap((k) => (params.get(k) ? [[k, params.get(k)]] : [])));
-  const valido = ConsultaDeFiltros.safeParse(bruto);
-  return filtrosDaConsulta(valido.success ? valido.data : {});
+  const validos = CHAVES_DE_FILTRO.flatMap((k) => {
+    const valor = params.get(k);
+    return valor && ConsultaDeFiltros.shape[k].safeParse(valor).success ? [[k, valor]] : [];
+  });
+  return filtrosDaConsulta(Object.fromEntries(validos));
 }
 
 export function useFiltros() {

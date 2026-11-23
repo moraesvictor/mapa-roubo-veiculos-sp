@@ -14,6 +14,7 @@ function tokens(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tokens()],
+  publicDir: new URL("../../data/tmp/pipeline/publico", import.meta.url).pathname,
   server: {
     proxy: {
       "/api": {

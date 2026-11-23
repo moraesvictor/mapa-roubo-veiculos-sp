@@ -7,7 +7,9 @@
     "extrair": "node src/principal.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "osm:baixar": "node src/baixar-osm.ts",
+    "busca": "node src/indice-de-lugares.ts"
   },
   "dependencies": {
     "@duckdb/node-api": "2.0.0-r.1",

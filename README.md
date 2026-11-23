@@ -35,6 +35,8 @@ pnpm dev
 | `pnpm test` | Runs every package's tests, including axe accessibility checks on the web app |
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm build` | Builds every package |
+| `pnpm --filter @mapa/pipeline osm:baixar` | Downloads SP streets and neighbourhoods from OpenStreetMap (Overpass) into `data/tmp/osm/` |
+| `pnpm --filter @mapa/pipeline busca` | Builds the street/neighbourhood search index (300 static shards, ODbL) into `data/tmp/pipeline/publico/busca/`, served by the web app |
 | `pnpm --filter @mapa/pipeline extrair` | Reads `data/raw/*.xlsx` and writes `data/tmp/pipeline/`: allow-listed records, metadata and `mapa.duckdb` (records, precomputed zones for the 837 filters, release info) |
 
 ## Data and privacy
