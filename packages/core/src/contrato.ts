@@ -127,3 +127,47 @@ export const RespostaSobre = z.object({
 export type RespostaSobre = z.infer<typeof RespostaSobre>;
 
 export const RespostaErro = z.object({ erro: z.string(), campos: z.array(z.string()).optional() });
+
+const Veiculo = z.enum(TIPOS_VEICULO);
+
+export const ConsultaDeModelos = z.object({ veiculo: Veiculo });
+
+export const RespostaModelos = z.object({
+  ...Janela,
+  veiculo: Veiculo,
+  modelos: z.array(z.object({ familia: z.string(), nome: z.string(), total: z.number().int().min(5) })).describe("Famílias com 5 ou mais ocorrências nos últimos 12 meses, da mais registrada pra menos"),
+});
+export type RespostaModelos = z.infer<typeof RespostaModelos>;
+
+export const Variacao = z.number().nullable().describe("Variação em relação aos 12 meses anteriores (0,03 = +3%); null quando algum dos dois períodos tem menos de 5");
+
+export const ConsultaDeRanking = z.object({
+  veiculo: Veiculo,
+  tipo: listaSeparadaPorVirgula(TIPOS_OCORRENCIA, "Tipo de ocorrência"),
+  limite: z.coerce.number().int().min(1).max(50).default(10),
+});
+
+export const RespostaRanking = z.object({
+  ...Janela,
+  veiculo: Veiculo,
+  itens: z.array(z.object({ posicao: z.number().int(), familia: z.string(), nome: z.string(), total: z.number().int().min(5), variacao: Variacao })),
+  outros: z.object({ modelos: z.number().int(), ocorrencias: z.number().int() }).describe("Modelos com menos de 5 ocorrências, somados"),
+  naoIdentificado: z.number().int().describe("Ocorrências sem modelo identificado no boletim"),
+  total: z.number().int(),
+});
+export type RespostaRanking = z.infer<typeof RespostaRanking>;
+
+export const ConsultaDeModelo = z.object({ veiculo: Veiculo, familia: z.string().min(2).max(80) });
+
+export const RespostaModelo = z.object({
+  ...Janela,
+  veiculo: Veiculo,
+  familia: z.string(),
+  nome: z.string(),
+  total: Contagem,
+  posicao: z.number().int().nullable().describe("Posição entre os modelos do mesmo tipo de veículo"),
+  porPeriodo: z.object(Object.fromEntries(PERIODOS_DO_DIA.map((p) => [p, Contagem])) as Record<(typeof PERIODOS_DO_DIA)[number], typeof Contagem>),
+  mensal: z.array(z.object({ mes: z.string().describe("AAAA-MM"), total: Contagem })),
+  variacao: Variacao,
+});
+export type RespostaModelo = z.infer<typeof RespostaModelo>;

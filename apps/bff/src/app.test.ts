@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { RespostaArea, RespostaCep, RespostaRua, RespostaSobre, RespostaZonas, type Ocorrencia } from "@mapa/core";
+import { RespostaArea, RespostaCep, RespostaModelo, RespostaModelos, RespostaRanking, RespostaRua, RespostaSobre, RespostaZonas, type Ocorrencia } from "@mapa/core";
 import { carregar } from "@mapa/pipeline/carregar";
 import { calcularZonas, janelaDe12Meses } from "@mapa/pipeline/zonas";
 import { cellToLatLng, gridDisk, latLngToCell } from "h3-js";
@@ -12,6 +12,7 @@ import { abrirDados, type Dados } from "./dados.ts";
 const CENTRO = latLngToCell(-23.5614, -46.6558, 8);
 const [lat, lon] = cellToLatLng(CENTRO);
 const AO_NORTE = latLngToCell(lat + 0.012, lon, 8);
+const LONGE = latLngToCell(-23.75, -46.7, 8);
 const vizinhas = gridDisk(CENTRO, 4).filter((c) => c !== CENTRO && c !== AO_NORTE);
 
 function ocorrencia(h3: string, extra: Partial<Ocorrencia> = {}): Ocorrencia {
@@ -33,7 +34,7 @@ function ocorrencia(h3: string, extra: Partial<Ocorrencia> = {}): Ocorrencia {
 }
 
 const repetir = (n: number, f: () => Ocorrencia) => Array.from({ length: n }, f);
-const dados: Ocorrencia[] = [
+const atuais: Ocorrencia[] = [
   ...vizinhas.flatMap((c, i) => repetir(1 + (i % 3), () => ocorrencia(c, { veiculo: "carro", rua: "RUA AUGUSTA" }))),
   ...repetir(150, () => ocorrencia(CENTRO)),
   ...repetir(8, () => ocorrencia(CENTRO, { periodo: "madrugada", tipo_local: "estacionamento" })),
@@ -41,7 +42,11 @@ const dados: Ocorrencia[] = [
   ...repetir(12, () => ocorrencia(AO_NORTE)),
   ...repetir(40, () => ocorrencia(CENTRO, { local_confiavel: false, rua: "PRACA DO LOTE" })),
   ...repetir(2, () => ocorrencia(CENTRO, { rua: "RUA RARA" })),
+  ...repetir(3, () => ocorrencia(LONGE, { familia: "SUZUKI RARA 125", rua: "RUA LONGE" })),
+  ...repetir(6, () => ocorrencia(LONGE, { familia: "HONDA (MODELO NAO IDENTIFICADO)", rua: "RUA LONGE" })),
 ];
+const antigos: Ocorrencia[] = repetir(100, () => ocorrencia(LONGE, { data: "2025-06-15", rua: "RUA LONGE" }));
+const dados = [...atuais, ...antigos];
 
 let pasta = "";
 let base: Dados;
@@ -93,7 +98,7 @@ describe("BFF", () => {
     const res = await get("/v1/zonas");
     expect(res.status).toBe(200);
     const corpo = RespostaZonas.parse(await res.json());
-    expect(corpo.total).toBe(dados.length - 40);
+    expect(corpo.total).toBe(atuais.length - 40);
     expect(corpo.celulas.find(([h3]) => h3 === CENTRO)).toEqual([CENTRO, 163, true]);
     expect(corpo.celulas.every(([, n]) => n >= 5)).toBe(true);
   });
@@ -166,6 +171,30 @@ describe("BFF", () => {
     expect((await get("/v1/cep/0131")).status).toBe(400);
   });
 
+  it("modelos: só famílias identificadas com 5 ou mais", async () => {
+    const corpo = RespostaModelos.parse(await (await get("/v1/modelos?veiculo=moto")).json());
+    expect(corpo.modelos.map((m) => m.nome)).toEqual(["Honda CG 160"]);
+    expect((await get("/v1/modelos?veiculo=bicicleta")).status).toBe(400);
+  });
+
+  it("ranking: inclui lotes (D24), variação vs. 12 meses anteriores, outros e não identificado", async () => {
+    const corpo = RespostaRanking.parse(await (await get("/v1/ranking?veiculo=moto")).json());
+    const cg = atuais.filter((o) => o.veiculo === "moto" && o.familia === "HONDA CG 160").length;
+    expect(corpo.itens).toEqual([{ posicao: 1, familia: "HONDA CG 160", nome: "Honda CG 160", total: cg, variacao: Math.round((cg / 100 - 1) * 1000) / 1000 }]);
+    expect(corpo.outros).toEqual({ modelos: 1, ocorrencias: 3 });
+    expect(corpo.naoIdentificado).toBe(6);
+  });
+
+  it("modelo: total, posição, períodos, 12 meses e 404", async () => {
+    const corpo = RespostaModelo.parse(await (await get("/v1/modelo?veiculo=moto&familia=HONDA%20CG%20160")).json());
+    expect(corpo.posicao).toBe(1);
+    expect(corpo.mensal.map((m) => m.mes)).toEqual(["2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"]);
+    expect(corpo.mensal.at(-1)).toEqual({ mes: "2026-06", total: corpo.total });
+    expect(corpo.porPeriodo.madrugada).toBe(8);
+    expect(corpo.porPeriodo.manha).toBeNull();
+    expect((await get("/v1/modelo?veiculo=moto&familia=NAO%20EXISTE")).status).toBe(404);
+  });
+
   it("sobre: metadados da release", async () => {
     const corpo = RespostaSobre.parse(await (await get("/v1/sobre")).json());
     expect(corpo.foraDoMapa.lotes).toBe(40);
@@ -174,7 +203,7 @@ describe("BFF", () => {
 
   it("publica o OpenAPI gerado do contrato", async () => {
     const doc = (await (await get("/openapi.json")).json()) as { paths: Record<string, unknown> };
-    expect(Object.keys(doc.paths).sort()).toEqual(["/v1/area/{h3}", "/v1/cep/{cep}", "/v1/geometria", "/v1/rua", "/v1/sobre", "/v1/zonas"]);
+    expect(Object.keys(doc.paths).sort()).toEqual(["/v1/area/{h3}", "/v1/cep/{cep}", "/v1/geometria", "/v1/modelo", "/v1/modelos", "/v1/ranking", "/v1/rua", "/v1/sobre", "/v1/zonas"]);
   });
 
   it("404 em JSON", async () => {

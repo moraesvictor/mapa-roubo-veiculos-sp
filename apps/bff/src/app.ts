@@ -2,6 +2,9 @@ import { createHash } from "node:crypto";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
   ConsultaDeFiltros,
+  ConsultaDeModelo,
+  ConsultaDeModelos,
+  ConsultaDeRanking,
   ConsultaDeRua,
   filtrosDaConsulta,
   RESOLUCAO_H3,
@@ -9,6 +12,9 @@ import {
   RespostaCep,
   RespostaErro,
   RespostaGeometria,
+  RespostaModelo,
+  RespostaModelos,
+  RespostaRanking,
   RespostaRua,
   RespostaSobre,
   RespostaZonas,
@@ -62,6 +68,30 @@ const rotaCep = createRoute({
   summary: "Rua e bairro de um CEP (ViaCEP). O CEP não é guardado nem registrado",
   request: { params: z.object({ cep: z.string().regex(/^\d{8}$/).describe("8 dígitos, sem hífen") }) },
   responses: { ...json(RespostaCep, "Rua e bairro"), ...erro400, 404: { description: "CEP não encontrado", content: { "application/json": { schema: RespostaErro } } }, 502: { description: "ViaCEP fora do ar", content: { "application/json": { schema: RespostaErro } } } },
+});
+
+const rotaModelos = createRoute({
+  method: "get",
+  path: "/v1/modelos",
+  summary: "Famílias de modelo com 5 ou mais ocorrências nos últimos 12 meses (pra busca do 'Meu veículo')",
+  request: { query: ConsultaDeModelos },
+  responses: { ...json(RespostaModelos, "Modelos"), ...naoMudou, ...erro400 },
+});
+
+const rotaRanking = createRoute({
+  method: "get",
+  path: "/v1/ranking",
+  summary: "Modelos com mais ocorrências, com variação em relação aos 12 meses anteriores",
+  request: { query: ConsultaDeRanking },
+  responses: { ...json(RespostaRanking, "Ranking de modelos"), ...naoMudou, ...erro400 },
+});
+
+const rotaModelo = createRoute({
+  method: "get",
+  path: "/v1/modelo",
+  summary: "Um modelo: total, posição, períodos do dia e evolução mês a mês",
+  request: { query: ConsultaDeModelo },
+  responses: { ...json(RespostaModelo, "Modelo"), ...naoMudou, ...erro400, 404: { description: "Modelo sem registros", content: { "application/json": { schema: RespostaErro } } } },
 });
 
 const rotaSobre = createRoute({
@@ -123,6 +153,22 @@ export function criarApp(dados: Dados, consultarCep: ConsultarCep = consultarVia
       if (resposta.erro) return c.json({ erro: "CEP não encontrado" }, 404);
       c.header("Cache-Control", CACHE_LONGO);
       return c.json({ cep, logradouro: resposta.logradouro || null, bairro: resposta.bairro || null, emSaoPaulo: resposta.localidade === "São Paulo" && resposta.uf === "SP" }, 200);
+    })
+    .openapi(rotaModelos, async (c) => {
+      if (cache(c, CACHE_CURTO)) return c.body(null, 304);
+      return c.json(await dados.modelos(c.req.valid("query").veiculo), 200);
+    })
+    .openapi(rotaRanking, async (c) => {
+      const { veiculo, tipo, limite } = c.req.valid("query");
+      if (cache(c, CACHE_CURTO)) return c.body(null, 304);
+      return c.json(await dados.ranking(veiculo, filtrosDaConsulta({ ...(tipo ? { tipo } : {}) }).tiposOcorrencia, limite), 200);
+    })
+    .openapi(rotaModelo, async (c) => {
+      const { veiculo, familia } = c.req.valid("query");
+      const resposta = await dados.modelo(veiculo, familia);
+      if (!resposta) return c.json({ erro: "modelo sem registros" }, 404);
+      if (cache(c, CACHE_CURTO)) return c.body(null, 304);
+      return c.json(resposta, 200);
     })
     .openapi(rotaSobre, (c) => {
       if (cache(c, CACHE_CURTO)) return c.body(null, 304);

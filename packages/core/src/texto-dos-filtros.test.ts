@@ -25,3 +25,28 @@ describe("textos dos filtros", () => {
     expect(nivel(60)).toBe(1);
   });
 });
+
+describe("modelos", () => {
+  it("nome legível da família", async () => {
+    const { nomeDoModelo } = await import("./texto-dos-filtros.ts");
+    expect(nomeDoModelo("HONDA CG 160")).toBe("Honda CG 160");
+    expect(nomeDoModelo("HYUNDAI HB20")).toBe("Hyundai HB20");
+    expect(nomeDoModelo("CHEVROLET ONIX PLUS")).toBe("Chevrolet Onix Plus");
+    expect(nomeDoModelo("VOLKSWAGEN T-CROSS")).toBe("Volkswagen T-Cross");
+    expect(nomeDoModelo("MERCEDES-BENZ C180")).toBe("Mercedes-Benz C180");
+  });
+
+  it("variação em texto, estável abaixo de 5%", async () => {
+    const { descreverVariacao } = await import("./texto-dos-filtros.ts");
+    expect(descreverVariacao(0.03)).toBe("Estável: variação de 3% em relação aos 12 meses anteriores.");
+    expect(descreverVariacao(-0.08)).toBe("Caiu 8% em relação aos 12 meses anteriores.");
+    expect(descreverVariacao(0.12)).toBe("Subiu 12% em relação aos 12 meses anteriores.");
+    expect(descreverVariacao(null)).toMatch(/Sem comparação/);
+  });
+
+  it("milhar como no Figma", async () => {
+    const { formatarMilhar } = await import("./texto-dos-filtros.ts");
+    expect(formatarMilhar(4612)).toBe("4,6 mil");
+    expect(formatarMilhar(312)).toBe("312");
+  });
+});

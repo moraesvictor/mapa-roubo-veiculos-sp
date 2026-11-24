@@ -4,6 +4,7 @@ import {
   chaveDoFiltro,
   DIRECOES,
   K_MINIMO,
+  nomeDoModelo,
   normalizarTexto,
   PERIODOS_DO_DIA,
   TIPOS_DE_LOCAL,
@@ -11,6 +12,11 @@ import {
   type Direcao,
   type Filtros,
   type RespostaArea,
+  type RespostaModelo,
+  type RespostaModelos,
+  type RespostaRanking,
+  type TipoOcorrencia,
+  type TipoVeiculo,
   type RespostaRua,
   type RespostaSobre,
   type RespostaZonas,
@@ -122,6 +128,82 @@ export async function abrirDados(arquivo: string) {
     return { ...janela, nome, total: contagem(linha?.n ?? 0) };
   }
 
+  const deslocar = (data: string, anos: number, dias: number) => {
+    const d = new Date(`${data}T00:00:00Z`);
+    d.setUTCFullYear(d.getUTCFullYear() + anos);
+    d.setUTCDate(d.getUTCDate() + dias);
+    return d.toISOString().slice(0, 10);
+  };
+  const anterior = { desde: deslocar(janela.desde, -1, 0), ate: deslocar(janela.desde, 0, -1) };
+  const IDENTIFICADO = "familia NOT LIKE '%NAO IDENTIFICADO%'";
+  const variacao = (atual: number, antes: number) => (atual >= K_MINIMO && antes >= K_MINIMO ? Math.round((atual / antes - 1) * 1000) / 1000 : null);
+
+  async function contarPorFamilia(veiculo: TipoVeiculo, tipos: readonly TipoOcorrencia[], periodo: { desde: string; ate: string }) {
+    const linhas = await ler<{ familia: string; n: number }>(
+      "SELECT familia, count(*)::INTEGER AS n FROM ocorrencias WHERE veiculo = $1 AND list_contains($2, tipo) AND data BETWEEN $3::DATE AND $4::DATE GROUP BY familia",
+      [veiculo, listValue([...tipos]), periodo.desde, periodo.ate],
+    );
+    return new Map(linhas.map((l) => [l.familia, l.n]));
+  }
+
+  const naoIdentificada = (familia: string) => familia.includes("NAO IDENTIFICADO");
+
+  async function modelos(veiculo: TipoVeiculo): Promise<RespostaModelos> {
+    const linhas = await ler<{ familia: string; n: number }>(
+      `SELECT familia, count(*)::INTEGER AS n FROM ocorrencias WHERE veiculo = $1 AND data BETWEEN $2::DATE AND $3::DATE AND ${IDENTIFICADO} GROUP BY familia HAVING count(*) >= ${K_MINIMO} ORDER BY n DESC, familia`,
+      [veiculo, janela.desde, janela.atualizadoAte],
+    );
+    return { ...janela, veiculo, modelos: linhas.map((l) => ({ familia: l.familia, nome: nomeDoModelo(l.familia), total: l.n })) };
+  }
+
+  async function ranking(veiculo: TipoVeiculo, tipos: readonly TipoOcorrencia[], limite: number): Promise<RespostaRanking> {
+    const atual = await contarPorFamilia(veiculo, tipos, { desde: janela.desde, ate: janela.atualizadoAte });
+    const antes = await contarPorFamilia(veiculo, tipos, anterior);
+    const identificadas = [...atual].filter(([f]) => !naoIdentificada(f));
+    const publicaveis = identificadas.filter(([, n]) => n >= K_MINIMO).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const pequenas = identificadas.filter(([, n]) => n < K_MINIMO);
+    return {
+      ...janela,
+      veiculo,
+      itens: publicaveis.slice(0, limite).map(([familia, n], i) => ({ posicao: i + 1, familia, nome: nomeDoModelo(familia), total: n, variacao: variacao(n, antes.get(familia) ?? 0) })),
+      outros: { modelos: pequenas.length, ocorrencias: pequenas.reduce((s, [, n]) => s + n, 0) },
+      naoIdentificado: [...atual].filter(([f]) => naoIdentificada(f)).reduce((s, [, n]) => s + n, 0),
+      total: [...atual.values()].reduce((s, n) => s + n, 0),
+    };
+  }
+
+  async function modelo(veiculo: TipoVeiculo, familia: string): Promise<RespostaModelo | null> {
+    const todos: TipoOcorrencia[] = ["furto", "roubo"];
+    const atual = await contarPorFamilia(veiculo, todos, { desde: janela.desde, ate: janela.atualizadoAte });
+    const antes = await contarPorFamilia(veiculo, todos, anterior);
+    const total = atual.get(familia);
+    if (total === undefined && !antes.has(familia)) return null;
+    const ordem = [...atual].filter(([f, n]) => !naoIdentificada(f) && n >= K_MINIMO).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const posicao = ordem.findIndex(([f]) => f === familia);
+    const periodos = await ler<{ chave: string; n: number }>(
+      "SELECT periodo AS chave, count(*)::INTEGER AS n FROM ocorrencias WHERE veiculo = $1 AND familia = $2 AND data BETWEEN $3::DATE AND $4::DATE GROUP BY periodo",
+      [veiculo, familia, janela.desde, janela.atualizadoAte],
+    );
+    const meses = await ler<{ mes: string; n: number }>(
+      "SELECT strftime(data, '%Y-%m') AS mes, count(*)::INTEGER AS n FROM ocorrencias WHERE veiculo = $1 AND familia = $2 AND data BETWEEN $3::DATE AND $4::DATE GROUP BY mes",
+      [veiculo, familia, janela.desde, janela.atualizadoAte],
+    );
+    const porMes = new Map(meses.map((m) => [m.mes, m.n]));
+    const listaDeMeses: string[] = [];
+    for (let d = new Date(`${janela.desde.slice(0, 7)}-01T00:00:00Z`); d.toISOString().slice(0, 7) <= janela.atualizadoAte.slice(0, 7); d.setUTCMonth(d.getUTCMonth() + 1)) listaDeMeses.push(d.toISOString().slice(0, 7));
+    return {
+      ...janela,
+      veiculo,
+      familia,
+      nome: nomeDoModelo(familia),
+      total: contagem(total ?? 0),
+      posicao: posicao >= 0 ? posicao + 1 : null,
+      porPeriodo: Object.fromEntries(PERIODOS_DO_DIA.map((p) => [p, contagem(periodos.find((l) => l.chave === p)?.n ?? 0)])) as RespostaModelo["porPeriodo"],
+      mensal: listaDeMeses.map((mes) => ({ mes, total: contagem(porMes.get(mes) ?? 0) })),
+      variacao: variacao(total ?? 0, antes.get(familia) ?? 0),
+    };
+  }
+
   const extracao = JSON.parse(release.extracao) as Extracao;
   const sobre: RespostaSobre = {
     ...janela,
@@ -146,6 +228,9 @@ export async function abrirDados(arquivo: string) {
     zonas,
     area,
     rua,
+    modelos,
+    ranking,
+    modelo,
     fechar: () => {
       conexao.closeSync();
       instancia.closeSync();
