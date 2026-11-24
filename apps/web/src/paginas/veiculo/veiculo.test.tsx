@@ -75,6 +75,7 @@ describe("Meu veículo", () => {
     expect(screen.getByText(/1º entre as motos/)).toBeTruthy();
     expect(screen.getByText("35%")).toBeTruthy();
     expect(screen.getByText("Caiu 19% em relação aos 12 meses anteriores.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Ver no mapa onde houve mais registros" }).getAttribute("href")).toBe("/lugar?veiculo=moto&modelo=HONDA%20CG%20160");
     await userEvent.click(screen.getByRole("button", { name: /Ver como tabela/ }));
     expect(screen.getByRole("row", { name: "jan/2026 Menos de 5" })).toBeTruthy();
     expect(await violacoesDeAcessibilidade(container)).toEqual([]);

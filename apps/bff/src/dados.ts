@@ -4,6 +4,7 @@ import {
   chaveDoFiltro,
   DIRECOES,
   K_MINIMO,
+  MINIMO_PARA_ZONAS,
   nomeDoModelo,
   normalizarTexto,
   PERIODOS_DO_DIA,
@@ -71,8 +72,8 @@ export async function abrirDados(arquivo: string) {
     })),
   };
 
-  const filtroSql = (f: Filtros, comPeriodo: boolean) => ({
-    sql: `local_confiavel AND data BETWEEN $1::DATE AND $2::DATE AND list_contains($3, veiculo) AND list_contains($4, tipo) AND list_contains($5, tipo_dia)${comPeriodo ? " AND list_contains($6, periodo)" : ""}`,
+  const filtroSql = (f: Filtros, comPeriodo: boolean, modelo?: string) => ({
+    sql: `local_confiavel AND data BETWEEN $1::DATE AND $2::DATE AND list_contains($3, veiculo) AND list_contains($4, tipo) AND list_contains($5, tipo_dia)${comPeriodo ? " AND list_contains($6, periodo)" : ""}${modelo ? ` AND familia = $${comPeriodo ? 7 : 6}` : ""}`,
     parametros: [
       janela.desde,
       janela.atualizadoAte,
@@ -80,26 +81,33 @@ export async function abrirDados(arquivo: string) {
       listValue([...f.tiposOcorrencia]),
       listValue([...f.tiposDeDia]),
       ...(comPeriodo ? [listValue([...f.periodos])] : []),
+      ...(modelo ? [modelo] : []),
     ] as DuckDBValue[],
   });
 
-  async function zonas(f: Filtros): Promise<RespostaZonas> {
+  async function zonas(f: Filtros, modelo?: string): Promise<RespostaZonas> {
+    if (modelo) {
+      const filtro = filtroSql(f, true, modelo);
+      const celulas = await ler<{ h3: string; n: number }>(`SELECT h3, count(*)::INTEGER AS n FROM ocorrencias WHERE ${filtro.sql} AND h3 IS NOT NULL GROUP BY h3 ORDER BY h3`, filtro.parametros);
+      const total = celulas.reduce((s, c) => s + c.n, 0);
+      return { ...janela, total, poucosRegistros: total < MINIMO_PARA_ZONAS, modelo, celulas: celulas.filter((c) => c.n >= K_MINIMO).map((c) => [c.h3, c.n, false]) };
+    }
     const chave = chaveDoFiltro(f);
     const [resumo] = await ler<{ total: number; poucos_registros: boolean }>("SELECT total, poucos_registros FROM zonas_resumo WHERE chave = $1", [chave]);
     const celulas = await ler<{ h3: string; n: number; zona: boolean }>("SELECT h3, n, zona FROM zonas_celulas WHERE chave = $1 ORDER BY h3", [chave]);
-    return { ...janela, total: resumo?.total ?? 0, poucosRegistros: resumo?.poucos_registros ?? true, celulas: celulas.map((c) => [c.h3, c.n, c.zona]) };
+    return { ...janela, total: resumo?.total ?? 0, poucosRegistros: resumo?.poucos_registros ?? true, modelo: null, celulas: celulas.map((c) => [c.h3, c.n, c.zona]) };
   }
 
-  async function area(h3: string, f: Filtros): Promise<RespostaArea> {
-    const comPeriodo = filtroSql(f, true);
-    const semPeriodo = filtroSql(f, false);
+  async function area(h3: string, f: Filtros, modelo?: string): Promise<RespostaArea> {
+    const comPeriodo = filtroSql(f, true, modelo);
+    const semPeriodo = filtroSql(f, false, modelo);
     const proximo = comPeriodo.parametros.length + 1;
     const [total] = await ler<{ n: number }>(`SELECT count(*)::INTEGER AS n FROM ocorrencias WHERE ${comPeriodo.sql} AND h3 = $${proximo}`, [...comPeriodo.parametros, h3]);
     const periodos = await ler<{ chave: string; n: number }>(`SELECT periodo AS chave, count(*)::INTEGER AS n FROM ocorrencias WHERE ${semPeriodo.sql} AND h3 = $${semPeriodo.parametros.length + 1} GROUP BY periodo`, [...semPeriodo.parametros, h3]);
     const locais = await ler<{ chave: string | null; n: number }>(`SELECT tipo_local AS chave, count(*)::INTEGER AS n FROM ocorrencias WHERE ${comPeriodo.sql} AND h3 = $${proximo} GROUP BY tipo_local`, [...comPeriodo.parametros, h3]);
     const vizinhas = gridDisk(h3, 2).filter((c) => gridDistance(h3, c) > 0);
     const porVizinha = await ler<{ h3: string; n: number }>(`SELECT h3, count(*)::INTEGER AS n FROM ocorrencias WHERE ${comPeriodo.sql} AND list_contains($${proximo}, h3) GROUP BY h3`, [...comPeriodo.parametros, listValue(vizinhas)]);
-    const [zona] = await ler<{ zona: boolean }>("SELECT zona FROM zonas_celulas WHERE chave = $1 AND h3 = $2", [chaveDoFiltro(f), h3]);
+    const [zona] = modelo ? [] : await ler<{ zona: boolean }>("SELECT zona FROM zonas_celulas WHERE chave = $1 AND h3 = $2", [chaveDoFiltro(f), h3]);
 
     const somaPorDirecao = new Map<Direcao, number>(DIRECOES.map((d) => [d, 0]));
     for (const v of porVizinha) somaPorDirecao.set(direcao(h3, v.h3), (somaPorDirecao.get(direcao(h3, v.h3)) ?? 0) + v.n);

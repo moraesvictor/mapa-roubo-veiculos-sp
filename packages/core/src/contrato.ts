@@ -15,6 +15,11 @@ export const ConsultaDeFiltros = z.object({
   tipo: listaSeparadaPorVirgula(TIPOS_OCORRENCIA, "Tipo de ocorrência"),
   dia: listaSeparadaPorVirgula(TIPOS_DE_DIA, "Dia útil ou fim de semana"),
   periodo: listaSeparadaPorVirgula(PERIODOS_DO_DIA, "Período do dia"),
+  modelo: z
+    .string()
+    .regex(/^[A-Z0-9 .\-()/+&]{2,80}$/)
+    .optional()
+    .describe("Família de modelo (como em /v1/modelos), ex.: HONDA CG 160. Com modelo, as contagens são calculadas na hora e não há zonas de concentração"),
 });
 export type ConsultaDeFiltros = z.infer<typeof ConsultaDeFiltros>;
 
@@ -54,6 +59,7 @@ export const RespostaZonas = z.object({
   ...Janela,
   total: z.number().int().describe("Ocorrências no mapa com o filtro (sem lotes nem registros sem local)"),
   poucosRegistros: z.boolean().describe("Menos de 200 ocorrências: sem zonas de concentração (D18)"),
+  modelo: z.string().nullable().describe("Modelo filtrado; quando presente, não há zonas de concentração (Gi* só é pré-calculado pros filtros sem modelo)"),
   celulas: z.array(z.tuple([z.string(), z.number().int().min(5), z.boolean()])).describe("[h3, ocorrências, zona de concentração]; só células com 5 ou mais"),
 });
 export type RespostaZonas = z.infer<typeof RespostaZonas>;

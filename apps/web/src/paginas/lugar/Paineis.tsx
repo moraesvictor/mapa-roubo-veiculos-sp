@@ -28,12 +28,16 @@ export function Legenda() {
   );
 }
 
-export function Resumo({ zonas, descricao }: { zonas: RespostaZonas | undefined; descricao: string }) {
+export function Resumo({ zonas, descricao, modelo = null }: { zonas: RespostaZonas | undefined; descricao: string; modelo?: string | null }) {
   return (
     <section className={estilos.resumo} aria-labelledby="titulo-resumo" aria-busy={!zonas}>
       <h2 id="titulo-resumo">São Paulo, cidade toda</h2>
       <p aria-live="polite">{zonas ? `${formatarContagem(zonas.total)} ${descricao}.` : "Carregando…"}</p>
-      {zonas?.poucosRegistros && (
+      {modelo ? (
+        <p className={estilos.aviso} role="note">
+          Com filtro de modelo, o mapa mostra só as áreas com 5 ou mais ocorrências do {modelo}, sem marcar zonas de concentração.
+        </p>
+      ) : zonas?.poucosRegistros && (
         <p className={estilos.aviso} role="note">
           Poucos registros com esse filtro (menos de 200): o mapa mostra as contagens, mas não marca zonas de concentração.
         </p>

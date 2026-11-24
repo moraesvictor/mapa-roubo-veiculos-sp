@@ -70,8 +70,8 @@ export function ResultadoDoModelo() {
                   Ver no ranking de {tipo === "moto" ? "motos" : "carros"} <Icone nome="seta" tamanho={20} />
                 </Link>
               )}
-              <Link to={`/lugar?veiculo=${tipo}`} className={estilos.principal}>
-                Ver no mapa onde houve mais registros de {tipo === "moto" ? "motos" : "carros"}
+              <Link to={`/lugar?veiculo=${tipo}&modelo=${encodeURIComponent(dados.familia)}`} className={estilos.principal}>
+                Ver no mapa onde houve mais registros
               </Link>
             </div>
 
