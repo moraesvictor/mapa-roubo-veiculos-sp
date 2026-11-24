@@ -16,9 +16,10 @@ vi.mock("../../mapa/MapaDeZonas.tsx", () => ({
 const janela = { atualizadoAte: "2026-09-30", desde: "2025-10-01" };
 const respostas: Record<string, unknown> = {
   "/api/v1/geometria": { type: "FeatureCollection", features: [] },
-  "/api/v1/zonas": { ...janela, total: 32389, poucosRegistros: false, celulas: [["88a8100cc7fffff", 59, true]] },
-  "/api/v1/zonas?veiculo=moto": { ...janela, total: 10079, poucosRegistros: false, celulas: [] },
-  "/api/v1/zonas?veiculo=carro&periodo=madrugada": { ...janela, total: 150, poucosRegistros: true, celulas: [] },
+  "/api/v1/zonas": { ...janela, total: 32389, poucosRegistros: false, modelo: null, celulas: [["88a8100cc7fffff", 59, true]] },
+  "/api/v1/zonas?veiculo=moto": { ...janela, total: 10079, poucosRegistros: false, modelo: null, celulas: [] },
+  "/api/v1/zonas?veiculo=moto&modelo=HONDA+CG+160": { ...janela, total: 3500, poucosRegistros: false, modelo: "HONDA CG 160", celulas: [["88a8100cc7fffff", 40, false]] },
+  "/api/v1/zonas?veiculo=carro&periodo=madrugada": { ...janela, total: 150, poucosRegistros: true, modelo: null, celulas: [] },
   "/api/v1/area/88a8100cc7fffff?veiculo=moto": {
     ...janela,
     h3: "88a8100cc7fffff",
@@ -79,6 +80,14 @@ describe("Lugar", () => {
     expect(screen.getByText("Zona de concentração com esse filtro")).toBeTruthy();
     expect(screen.getAllByText("menos de 5")).toHaveLength(2);
     expect(screen.getByRole("link", { name: /Ver como tabela/ }).getAttribute("href")).toBe("/lugar/tabela?veiculo=moto&area=88a8100cc7fffff");
+  });
+
+  it("filtra por modelo: chip removível, descrição e aviso de sem zonas", async () => {
+    render(<App caminhoInicial="/lugar?veiculo=moto&modelo=HONDA%20CG%20160" />);
+    expect(await screen.findByText("3.500 ocorrências registradas com Honda CG 160, nos últimos 12 meses.")).toBeTruthy();
+    expect(screen.getByText(/sem marcar zonas de concentração/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Remover filtro de modelo Honda CG 160" }));
+    expect(await screen.findByText("10.079 ocorrências registradas com moto, nos últimos 12 meses.")).toBeTruthy();
   });
 
   it("dá erro amigável com tentar de novo quando a API falha", async () => {

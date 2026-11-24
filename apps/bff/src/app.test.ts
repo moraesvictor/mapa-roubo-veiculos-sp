@@ -171,6 +171,21 @@ describe("BFF", () => {
     expect((await get("/v1/cep/0131")).status).toBe(400);
   });
 
+  it("zonas por modelo: calculadas na hora, k respeitado, sem zonas", async () => {
+    const corpo = RespostaZonas.parse(await (await get("/v1/zonas?veiculo=moto&modelo=HONDA%20CG%20160")).json());
+    expect(corpo.modelo).toBe("HONDA CG 160");
+    expect(corpo.celulas.every(([, n, zona]) => n >= 5 && !zona)).toBe(true);
+    expect(corpo.celulas.find(([h3]) => h3 === CENTRO)?.[1]).toBe(150 + 8 + 3 + 2);
+    expect(RespostaZonas.parse(await (await get("/v1/zonas?modelo=SUZUKI%20RARA%20125")).json()).celulas).toEqual([]);
+    expect((await get("/v1/zonas?modelo=drop%20table")).status).toBe(400);
+  });
+
+  it("área por modelo", async () => {
+    const corpo = RespostaArea.parse(await (await get(`/v1/area/${CENTRO}?modelo=HONDA%20CG%20160`)).json());
+    expect(corpo.total).toBe(150 + 8 + 3 + 2);
+    expect(corpo.zona).toBe(false);
+  });
+
   it("modelos: só famílias identificadas com 5 ou mais", async () => {
     const corpo = RespostaModelos.parse(await (await get("/v1/modelos?veiculo=moto")).json());
     expect(corpo.modelos.map((m) => m.nome)).toEqual(["Honda CG 160"]);

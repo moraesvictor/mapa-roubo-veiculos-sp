@@ -129,7 +129,8 @@ export function criarApp(dados: Dados, consultarCep: ConsultarCep = consultarVia
   const rotas = app
     .openapi(rotaZonas, async (c) => {
       if (cache(c, CACHE_CURTO)) return c.body(null, 304);
-      return c.json(await dados.zonas(filtrosDaConsulta(c.req.valid("query"))), 200);
+      const { modelo, ...filtro } = c.req.valid("query");
+      return c.json(await dados.zonas(filtrosDaConsulta(filtro), modelo), 200);
     })
     .openapi(rotaGeometria, (c) => {
       if (cache(c, CACHE_LONGO)) return c.body(null, 304);
@@ -139,7 +140,8 @@ export function criarApp(dados: Dados, consultarCep: ConsultarCep = consultarVia
       const { h3 } = c.req.valid("param");
       if (!isValidCell(h3) || getResolution(h3) !== RESOLUCAO_H3) return c.json({ erro: "célula inválida", campos: ["h3"] }, 400);
       if (cache(c, CACHE_CURTO)) return c.body(null, 304);
-      return c.json(await dados.area(h3, filtrosDaConsulta(c.req.valid("query"))), 200);
+      const { modelo, ...filtro } = c.req.valid("query");
+      return c.json(await dados.area(h3, filtrosDaConsulta(filtro), modelo), 200);
     })
     .openapi(rotaRua, async (c) => {
       const { nome, celulas, ...filtro } = c.req.valid("query");

@@ -1,9 +1,9 @@
-import { chipsAtivos, consultaDosFiltros, descreverFiltros, pertoDe, RespostaArea, RespostaGeometria, RespostaRua, RespostaZonas, type Filtros, type RespostaGeometria as Geometria } from "@mapa/core";
+import { chipsAtivos, consultaDosFiltros, descreverFiltros, nomeDoModelo, pertoDe, TIPOS_VEICULO, RespostaArea, RespostaGeometria, RespostaRua, RespostaZonas, type Filtros, type RespostaGeometria as Geometria } from "@mapa/core";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Botao } from "../../componentes/Botao.tsx";
 import { useRecurso } from "../../dados/api.ts";
-import { comConsulta, useFiltros } from "../../dados/useFiltros.ts";
+import { comConsulta, comModelo, useFiltros } from "../../dados/useFiltros.ts";
 import { Icone } from "../../icones/Icone.tsx";
 import estilos from "./Lugar.module.css";
 import { PainelDeFiltros } from "./PainelDeFiltros.tsx";
@@ -11,10 +11,10 @@ import { DetalheDaArea, Legenda, Resumo, TotalDaRua } from "./Paineis.tsx";
 
 const MapaDeZonas = lazy(() => import("../../mapa/MapaDeZonas.tsx"));
 
-function DialogoDeFiltros({ aberto, filtros, aoAplicar, aoFechar }: { aberto: boolean; filtros: Filtros; aoAplicar: (f: Filtros) => void; aoFechar: () => void }) {
+function DialogoDeFiltros({ aberto, filtros, modelo, aoAplicar, aoFechar }: { aberto: boolean; filtros: Filtros; modelo: string | null; aoAplicar: (f: Filtros) => void; aoFechar: () => void }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [rascunho, setRascunho] = useState(filtros);
-  const previa = useRecurso(aberto ? comConsulta("/v1/zonas", consultaDosFiltros(rascunho)) : null, RespostaZonas);
+  const previa = useRecurso(aberto ? comConsulta("/v1/zonas", comModelo(consultaDosFiltros(rascunho), modelo)) : null, RespostaZonas);
 
   useEffect(() => {
     const d = dialogo.current;
@@ -66,7 +66,7 @@ function areaMaisPerto(geometria: Geometria, lon: number, lat: number): string |
 }
 
 export function Lugar() {
-  const { filtros, consulta, area, atualizar } = useFiltros();
+  const { filtros, modelo, consulta, area, atualizar } = useFiltros();
   const { search } = useLocation();
   const [params] = useSearchParams();
   const navegar = useNavigate();
@@ -82,8 +82,8 @@ export function Lugar() {
     local && ehRua ? comConsulta("/v1/rua", new URLSearchParams([...new URLSearchParams(consulta), ["nome", local], ...(celulasDaRua ? [["celulas", celulasDaRua]] : [])]).toString()) : null,
     RespostaRua,
   );
-  const descricao = descreverFiltros(filtros);
-  const chips = chipsAtivos(filtros);
+  const descricao = modelo ? `com ${nomeDoModelo(modelo)}, ${descreverFiltros({ ...filtros, tiposVeiculo: TIPOS_VEICULO })}` : descreverFiltros(filtros);
+  const chips = chipsAtivos(modelo ? { ...filtros, tiposVeiculo: TIPOS_VEICULO } : filtros);
 
   useEffect(() => {
     document.title = "Onde e quando há mais registros · Ocorrências de veículos em SP";
@@ -151,6 +151,14 @@ export function Lugar() {
             </button>
           </div>
           <ul className={estilos.chipsAtivos} aria-label="Filtros ativos">
+            {modelo && (
+              <li>
+                <button type="button" className={estilos.chipRemovivel} onClick={() => atualizar({ modelo: null })} aria-label={`Remover filtro de modelo ${nomeDoModelo(modelo)}`}>
+                  {nomeDoModelo(modelo)}
+                  <Icone nome="fechar" tamanho={18} />
+                </button>
+              </li>
+            )}
             {chips.map((c) => (
               <li key={c}>
                 <Icone nome="check" tamanho={18} />
@@ -211,7 +219,7 @@ export function Lugar() {
             {local && ehRua && <TotalDaRua nome={local} total={totalDaRua?.estado === "pronto" ? totalDaRua.dados.total : undefined} />}
           </>
         ) : (
-          <Resumo zonas={zonas?.dados} descricao={descricao} />
+          <Resumo zonas={zonas?.dados} descricao={descricao} modelo={modelo ? nomeDoModelo(modelo) : null} />
         )}
         <div className={estilos.soCelular}>
           <Legenda />
@@ -233,6 +241,7 @@ export function Lugar() {
         key={String(filtrosAbertos)}
         aberto={filtrosAbertos}
         filtros={filtros}
+        modelo={modelo}
         aoFechar={() => setFiltrosAbertos(false)}
         aoAplicar={(f) => {
           atualizar({ filtros: f });

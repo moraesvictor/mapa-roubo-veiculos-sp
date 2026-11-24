@@ -15,7 +15,7 @@ const respostas: Record<string, unknown> = {
   "/api/v1/cep/01310200": { cep: "01310200", logradouro: "Avenida Paulista", bairro: "Bela Vista", emSaoPaulo: true },
   "/api/v1/cep/13010000": { cep: "13010000", logradouro: "Rua X", bairro: "Centro", emSaoPaulo: false },
   "/api/v1/geometria": { type: "FeatureCollection", features: [] },
-  "/api/v1/zonas?veiculo=moto": { ...janela, total: 10079, poucosRegistros: false, celulas: [] },
+  "/api/v1/zonas?veiculo=moto": { ...janela, total: 10079, poucosRegistros: false, modelo: null, celulas: [] },
   "/api/v1/area/88a8100c6dfffff?veiculo=moto": {
     ...janela,
     h3: "88a8100c6dfffff",

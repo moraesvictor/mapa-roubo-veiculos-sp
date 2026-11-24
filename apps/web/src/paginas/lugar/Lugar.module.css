@@ -137,6 +137,20 @@
   border-radius: var(--raio-chip);
 }
 
+.chipRemovivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cor-texto-invertido) !important;
+  background: var(--cor-superficie-destaque) !important;
+  border-color: var(--cor-superficie-destaque) !important;
+}
+
+.chipsAtivos li:has(.chipRemovivel) {
+  padding: 0;
+  background: none;
+}
+
 .chipsAtivos li:last-child {
   padding: 0;
   background: none;
