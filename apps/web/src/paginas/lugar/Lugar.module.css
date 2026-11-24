@@ -45,8 +45,62 @@
   box-shadow: var(--sombra-flutuante);
 }
 
-.barraDeBusca > span {
+.linkDeBusca {
   flex: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: var(--cor-texto-principal);
+  text-decoration: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.botaoVoltar {
+  display: grid;
+  place-items: center;
+  width: var(--alvo-de-toque);
+  height: var(--alvo-de-toque);
+  margin-left: calc(var(--espaco-3) * -1);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.buscaDesktop {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 48px;
+  padding: 0 var(--espaco-4);
+  font: var(--texto-corpo-campo);
+  color: var(--cor-texto-principal);
+  text-decoration: none;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-campo);
+}
+
+.textoBotao {
+  margin-top: var(--espaco-2);
+  padding: var(--espaco-2) 0;
+  font: var(--texto-rotulo-chip);
+  color: var(--cor-marca-principal);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.totalDaRua {
+  display: grid;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3);
+  background: var(--cor-superficie-fundo);
+  border-radius: var(--raio-cartao);
+}
+
+.totalDaRua h3 {
+  font: var(--texto-rotulo-campo);
 }
 
 .botaoFiltros {

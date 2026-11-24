@@ -96,3 +96,10 @@ describe("Tabela", () => {
     expect(await violacoesDeAcessibilidade(container)).toEqual([]);
   });
 });
+
+describe("filtros na URL", () => {
+  it("um parâmetro inválido não apaga os outros filtros", async () => {
+    const { lerFiltros } = await import("../../dados/useFiltros.ts");
+    expect(lerFiltros(new URLSearchParams("veiculo=moto&tipo=rua")).tiposVeiculo).toEqual(["moto"]);
+  });
+});

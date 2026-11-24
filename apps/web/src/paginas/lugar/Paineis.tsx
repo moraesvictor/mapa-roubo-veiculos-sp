@@ -45,12 +45,22 @@ export function Resumo({ zonas, descricao }: { zonas: RespostaZonas | undefined;
 
 const valor = (c: Contagem) => (c === null ? "<5" : c.toLocaleString("pt-BR"));
 
-export function DetalheDaArea({ area, descricao, aoFechar, carregando }: { area: RespostaArea | undefined; descricao: string; aoFechar: () => void; carregando: boolean }) {
+export function TotalDaRua({ nome, total }: { nome: string; total: Contagem | undefined }) {
+  return (
+    <section className={estilos.totalDaRua} aria-labelledby="titulo-rua" aria-busy={total === undefined}>
+      <h3 id="titulo-rua">Na {nome} inteira</h3>
+      <p aria-live="polite">{total === undefined ? "Carregando…" : `${formatarContagem(total)}, com os mesmos filtros.`}</p>
+      <p className={estilos.nota}>Ruas longas somam mais registros.</p>
+    </section>
+  );
+}
+
+export function DetalheDaArea({ area, descricao, aoFechar, carregando, titulo }: { area: RespostaArea | undefined; descricao: string; aoFechar: () => void; carregando: boolean; titulo?: string | undefined }) {
   const maior = Math.max(1, ...PERIODOS_DO_DIA.map((p) => area?.porPeriodo[p] ?? 0));
   return (
     <section className={estilos.detalhe} aria-labelledby="titulo-detalhe" aria-busy={carregando}>
       <div className={estilos.cabecalhoDoDetalhe}>
-        <p className={estilos.nota}>Esta área · cerca de 1 km</p>
+        <p className={estilos.nota}>{titulo ? `${titulo} · área de cerca de 1 km` : "Esta área · cerca de 1 km"}</p>
         <button type="button" className={estilos.fechar} onClick={aoFechar} aria-label="Fechar detalhe da área">
           <Icone nome="fechar" />
         </button>

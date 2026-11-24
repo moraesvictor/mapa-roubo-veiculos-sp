@@ -1,13 +1,13 @@
-import { chipsAtivos, consultaDosFiltros, descreverFiltros, RespostaArea, RespostaGeometria, RespostaZonas, type Filtros } from "@mapa/core";
+import { chipsAtivos, consultaDosFiltros, descreverFiltros, pertoDe, RespostaArea, RespostaGeometria, RespostaRua, RespostaZonas, type Filtros, type RespostaGeometria as Geometria } from "@mapa/core";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Botao } from "../../componentes/Botao.tsx";
 import { useRecurso } from "../../dados/api.ts";
 import { comConsulta, useFiltros } from "../../dados/useFiltros.ts";
 import { Icone } from "../../icones/Icone.tsx";
 import estilos from "./Lugar.module.css";
 import { PainelDeFiltros } from "./PainelDeFiltros.tsx";
-import { DetalheDaArea, Legenda, Resumo } from "./Paineis.tsx";
+import { DetalheDaArea, Legenda, Resumo, TotalDaRua } from "./Paineis.tsx";
 
 const MapaDeZonas = lazy(() => import("../../mapa/MapaDeZonas.tsx"));
 
@@ -53,20 +53,66 @@ function useAviso(): [string | null, (texto: string) => void] {
   return [aviso, setAviso];
 }
 
+function areaMaisPerto(geometria: Geometria, lon: number, lat: number): string | null {
+  let melhor: string | null = null;
+  let distancia = Infinity;
+  for (const f of geometria.features) {
+    const anel = f.geometry.coordinates[0] ?? [];
+    const [x, y] = anel.reduce(([a, b], [lo, la]) => [a + lo / anel.length, b + la / anel.length], [0, 0]);
+    const d = ((x - lon) * Math.cos((lat * Math.PI) / 180)) ** 2 + (y - lat) ** 2;
+    if (d < distancia) [distancia, melhor] = [d, f.id];
+  }
+  return Math.sqrt(distancia) * 111 <= 2 ? melhor : null;
+}
+
 export function Lugar() {
   const { filtros, consulta, area, atualizar } = useFiltros();
   const { search } = useLocation();
+  const [params] = useSearchParams();
+  const navegar = useNavigate();
+  const local = params.get("local");
+  const ehRua = params.get("categoria") === "rua";
+  const celulasDaRua = params.get("celulas");
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   const [aviso, avisar] = useAviso();
   const geometria = useRecurso("/v1/geometria", RespostaGeometria);
   const zonas = useRecurso(comConsulta("/v1/zonas", consulta), RespostaZonas);
   const detalhe = useRecurso(area ? comConsulta(`/v1/area/${area}`, consulta) : null, RespostaArea);
+  const totalDaRua = useRecurso(
+    local && ehRua ? comConsulta("/v1/rua", new URLSearchParams([...new URLSearchParams(consulta), ["nome", local], ...(celulasDaRua ? [["celulas", celulasDaRua]] : [])]).toString()) : null,
+    RespostaRua,
+  );
   const descricao = descreverFiltros(filtros);
   const chips = chipsAtivos(filtros);
 
   useEffect(() => {
     document.title = "Onde e quando há mais registros · Ocorrências de veículos em SP";
   }, []);
+
+  const pedirLocalizacao = params.get("minhaLocalizacao") === "1";
+  const geometriaPronta = geometria?.estado === "pronto" ? geometria.dados : null;
+  useEffect(() => {
+    if (!pedirLocalizacao || !geometriaPronta) return;
+    const semPedido = new URLSearchParams(search);
+    semPedido.delete("minhaLocalizacao");
+    const seguir = (area: string | null, mensagem?: string) => {
+      if (area) semPedido.set("area", area);
+      navegar(`/lugar?${semPedido.toString()}`, { replace: true });
+      if (mensagem) avisar(mensagem);
+    };
+    if (!("geolocation" in navigator)) return seguir(null, "Seu navegador não informa a localização.");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const area = areaMaisPerto(geometriaPronta, coords.longitude, coords.latitude);
+        seguir(area, area ? undefined : "Não há áreas com registros perto de você, ou você está fora de São Paulo.");
+      },
+      () => seguir(null, "Não deu pra usar sua localização."),
+      { enableHighAccuracy: false, maximumAge: 300_000, timeout: 10_000 },
+    );
+  }, [pedirLocalizacao, geometriaPronta, search, navegar, avisar]);
+
+  const paraBusca = consulta ? `/lugar/busca?${consulta}` : "/lugar/busca";
+  const limparLocal = () => navegar(consulta ? `/lugar?${consulta}` : "/lugar");
 
   const compartilhar = async () => {
     const url = window.location.href;
@@ -90,8 +136,16 @@ export function Lugar() {
       <div className={estilos.areaDoMapa}>
         <div className={estilos.topo}>
           <div className={estilos.barraDeBusca}>
-            <Icone nome="busca" />
-            <span>São Paulo, cidade toda</span>
+            {local ? (
+              <button type="button" className={estilos.botaoVoltar} onClick={limparLocal} aria-label="Voltar pra cidade toda">
+                <Icone nome="voltar" />
+              </button>
+            ) : (
+              <Icone nome="busca" />
+            )}
+            <Link to={paraBusca} className={estilos.linkDeBusca}>
+              {local ?? "Buscar endereço, CEP ou região"}
+            </Link>
             <button type="button" className={estilos.botaoFiltros} onClick={() => setFiltrosAbertos(true)} aria-label="Abrir filtros" aria-haspopup="dialog">
               <Icone nome="filtros" />
             </button>
@@ -118,7 +172,7 @@ export function Lugar() {
           </div>
         ) : geometria?.estado === "pronto" ? (
           <Suspense fallback={<div className={estilos.carregandoMapa}>Carregando mapa…</div>}>
-            <MapaDeZonas geometria={geometria.dados} zonas={zonas?.dados} selecionada={area} aoSelecionar={(h3) => atualizar({ area: h3 })} />
+            <MapaDeZonas geometria={geometria.dados} zonas={zonas?.dados} selecionada={area} aproximar={Boolean(local) || pedirLocalizacao} aoSelecionar={(h3) => atualizar({ area: h3 })} />
           </Suspense>
         ) : (
           <div className={estilos.carregandoMapa}>Carregando mapa…</div>
@@ -132,10 +186,30 @@ export function Lugar() {
       <aside className={estilos.coluna} aria-label="Resumo e filtros">
         <h2 className={estilos.tituloDaColuna}>Onde e quando há mais registros</h2>
         <div className={estilos.soDesktop}>
+          <Link to={paraBusca} className={estilos.buscaDesktop}>
+            <Icone nome="busca" />
+            {local ?? "Buscar endereço, CEP ou região"}
+          </Link>
+          {local && (
+            <button type="button" className={estilos.textoBotao} onClick={limparLocal}>
+              Ver a cidade toda
+            </button>
+          )}
+        </div>
+        <div className={estilos.soDesktop}>
           <PainelDeFiltros filtros={filtros} aoMudar={(f) => atualizar({ filtros: f })} />
         </div>
         {area ? (
-          <DetalheDaArea area={detalhe?.dados} carregando={detalhe?.estado === "carregando"} descricao={descricao} aoFechar={() => atualizar({ area: null })} />
+          <>
+            <DetalheDaArea
+              titulo={local ? pertoDe(local) : undefined}
+              area={detalhe?.dados}
+              carregando={detalhe?.estado === "carregando"}
+              descricao={descricao}
+              aoFechar={() => (local ? limparLocal() : atualizar({ area: null }))}
+            />
+            {local && ehRua && <TotalDaRua nome={local} total={totalDaRua?.estado === "pronto" ? totalDaRua.dados.total : undefined} />}
+          </>
         ) : (
           <Resumo zonas={zonas?.dados} descricao={descricao} />
         )}

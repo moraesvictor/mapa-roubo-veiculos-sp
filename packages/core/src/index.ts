@@ -5,3 +5,4 @@ export * from "./filtros.ts";
 export * from "./contrato.ts";
 export * from "./texto.ts";
 export * from "./texto-dos-filtros.ts";
+export * from "./busca.ts";

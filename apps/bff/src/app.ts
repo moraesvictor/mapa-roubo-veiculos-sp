@@ -6,6 +6,7 @@ import {
   filtrosDaConsulta,
   RESOLUCAO_H3,
   RespostaArea,
+  RespostaCep,
   RespostaErro,
   RespostaGeometria,
   RespostaRua,
@@ -55,6 +56,14 @@ const rotaRua = createRoute({
   responses: { ...json(RespostaRua, "Total da rua"), ...naoMudou, ...erro400 },
 });
 
+const rotaCep = createRoute({
+  method: "get",
+  path: "/v1/cep/{cep}",
+  summary: "Rua e bairro de um CEP (ViaCEP). O CEP não é guardado nem registrado",
+  request: { params: z.object({ cep: z.string().regex(/^\d{8}$/).describe("8 dígitos, sem hífen") }) },
+  responses: { ...json(RespostaCep, "Rua e bairro"), ...erro400, 404: { description: "CEP não encontrado", content: { "application/json": { schema: RespostaErro } } }, 502: { description: "ViaCEP fora do ar", content: { "application/json": { schema: RespostaErro } } } },
+});
+
 const rotaSobre = createRoute({
   method: "get",
   path: "/v1/sobre",
@@ -62,7 +71,15 @@ const rotaSobre = createRoute({
   responses: { ...json(RespostaSobre, "Metadados da release"), ...naoMudou },
 });
 
-export function criarApp(dados: Dados) {
+export type ConsultarCep = (cep: string) => Promise<{ logradouro?: string; bairro?: string; localidade?: string; uf?: string; erro?: boolean | string } | null>;
+
+export const consultarViaCep: ConsultarCep = async (cep) => {
+  const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`, { headers: { accept: "application/json" }, signal: AbortSignal.timeout(5000) });
+  if (!res.ok) return res.status === 400 ? { erro: true } : null;
+  return (await res.json()) as Awaited<ReturnType<ConsultarCep>>;
+};
+
+export function criarApp(dados: Dados, consultarCep: ConsultarCep = consultarViaCep) {
   const app = new OpenAPIHono({
     defaultHook: (resultado, c) => {
       if (!resultado.success) return c.json({ erro: "parâmetro inválido", campos: resultado.error.issues.map((i) => i.path.join(".")) }, 400);
@@ -95,9 +112,17 @@ export function criarApp(dados: Dados) {
       return c.json(await dados.area(h3, filtrosDaConsulta(c.req.valid("query"))), 200);
     })
     .openapi(rotaRua, async (c) => {
-      const { nome, ...filtro } = c.req.valid("query");
+      const { nome, celulas, ...filtro } = c.req.valid("query");
       if (cache(c, CACHE_CURTO)) return c.body(null, 304);
-      return c.json(await dados.rua(nome, filtrosDaConsulta(filtro)), 200);
+      return c.json(await dados.rua(nome, filtrosDaConsulta(filtro), celulas?.split(",") ?? []), 200);
+    })
+    .openapi(rotaCep, async (c) => {
+      const { cep } = c.req.valid("param");
+      const resposta = await consultarCep(cep).catch(() => null);
+      if (!resposta) return c.json({ erro: "serviço de CEP indisponível" }, 502);
+      if (resposta.erro) return c.json({ erro: "CEP não encontrado" }, 404);
+      c.header("Cache-Control", CACHE_LONGO);
+      return c.json({ cep, logradouro: resposta.logradouro || null, bairro: resposta.bairro || null, emSaoPaulo: resposta.localidade === "São Paulo" && resposta.uf === "SP" }, 200);
     })
     .openapi(rotaSobre, (c) => {
       if (cache(c, CACHE_CURTO)) return c.body(null, 304);
