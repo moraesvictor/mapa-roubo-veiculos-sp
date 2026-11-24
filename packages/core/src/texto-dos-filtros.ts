@@ -51,3 +51,23 @@ export function niveisDaEscala(valores: readonly number[], degraus = 5): (n: num
   const cortes = quantis.map((q) => ordenados[Math.floor(q * (ordenados.length - 1))] ?? 0);
   return (n) => cortes.filter((c) => n > c).length;
 }
+
+const SIGLAS = /^(?=.*\d)|^[A-Z]{1,3}$/;
+
+export function nomeDoModelo(familia: string): string {
+  return familia
+    .split(" ")
+    .map((parte) => (SIGLAS.test(parte) ? parte : parte.split("-").map((p) => p.charAt(0) + p.slice(1).toLowerCase()).join("-")))
+    .join(" ");
+}
+
+export function descreverVariacao(variacao: number | null): string {
+  if (variacao === null) return "Sem comparação: poucos registros em um dos períodos.";
+  const pct = Math.round(Math.abs(variacao) * 100);
+  if (pct < 5) return `Estável: variação de ${pct}% em relação aos 12 meses anteriores.`;
+  return variacao > 0 ? `Subiu ${pct}% em relação aos 12 meses anteriores.` : `Caiu ${pct}% em relação aos 12 meses anteriores.`;
+}
+
+export function formatarMilhar(n: number): string {
+  return n >= 1000 ? `${(Math.round(n / 100) / 10).toLocaleString("pt-BR")} mil` : n.toLocaleString("pt-BR");
+}

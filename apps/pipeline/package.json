@@ -9,7 +9,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "osm:baixar": "node src/baixar-osm.ts",
-    "busca": "node src/indice-de-lugares.ts"
+    "busca": "node src/indice-de-lugares.ts",
+    "baixar": "node src/baixar-ssp.ts"
   },
   "dependencies": {
     "@duckdb/node-api": "2.0.0-r.1",

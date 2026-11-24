@@ -6,6 +6,9 @@ import { Inicio } from "./paginas/Inicio.tsx";
 import { Lugar } from "./paginas/lugar/Lugar.tsx";
 import { Tabela } from "./paginas/lugar/Tabela.tsx";
 import { Busca } from "./paginas/lugar/Busca.tsx";
+import { MeuVeiculo } from "./paginas/veiculo/MeuVeiculo.tsx";
+import { Ranking } from "./paginas/veiculo/Ranking.tsx";
+import { ResultadoDoModelo } from "./paginas/veiculo/ResultadoDoModelo.tsx";
 
 export const ROTAS: RouteObject[] = [
   {
@@ -15,14 +18,9 @@ export const ROTAS: RouteObject[] = [
       { path: "lugar", element: <Lugar /> },
       { path: "lugar/tabela", element: <Tabela /> },
       { path: "lugar/busca", element: <Busca /> },
-      {
-        path: "meu-veiculo",
-        element: <EmConstrucao titulo="Meu veículo" descricao="Veja se o seu modelo aparece muito nos registros de roubo e furto." />,
-      },
-      {
-        path: "ranking",
-        element: <EmConstrucao titulo="Ranking de modelos" descricao="Modelos com mais roubos e furtos registrados em São Paulo nos últimos 12 meses." />,
-      },
+      { path: "meu-veiculo", element: <MeuVeiculo /> },
+      { path: "meu-veiculo/:veiculo/:familia", element: <ResultadoDoModelo /> },
+      { path: "ranking", element: <Ranking /> },
       {
         path: "sobre",
         element: <EmConstrucao titulo="Sobre os dados" descricao="De onde vêm os dados, o que fica de fora e quais são os limites." />,

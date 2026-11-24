@@ -57,8 +57,8 @@ const CILINDRADA = /^(\d{2,4})([A-Z]{0,2})$/;
 function modeloDeMoto(resto: string[]): string | null {
   const [primeiro = "", segundo = ""] = resto;
   if (!primeiro || CILINDRADA.test(primeiro)) return null;
-  const colado = /^([A-Z]+)(\d{2,4}[A-Z]{0,2})$/.exec(primeiro);
-  if (colado) return `${colado[1]} ${colado[2]}`;
+  const colado = /^([A-Z]+)(\d{2,4})([A-Z]*)$/.exec(primeiro);
+  if (colado) return `${colado[1]} ${colado[2]}${(colado[3] ?? "").length <= 2 ? (colado[3] ?? "") : ""}`;
   const cc = CILINDRADA.exec(segundo);
   return cc ? `${primeiro} ${cc[1]}${cc[2]}` : primeiro;
 }
