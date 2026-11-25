@@ -1,24 +1,25 @@
-import { consultaDosFiltros, type Lugar } from "@mapa/core";
+import type { Lugar } from "@mapa/core";
 import { useEffect, useId, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Botao } from "../../componentes/Botao.tsx";
 import { useBusca } from "../../dados/busca.ts";
 import { useFiltros } from "../../dados/useFiltros.ts";
 import { Icone } from "../../icones/Icone.tsx";
 import estilos from "./Busca.module.css";
 
-export function destinoDoLugar(lugar: Lugar, consultaDeFiltros: string) {
+export function destinoDoLugar(lugar: Lugar, consultaDeFiltros: string, rota = "/lugar") {
   const params = new URLSearchParams(consultaDeFiltros);
   params.set("area", lugar.celula);
   params.set("local", lugar.nome);
   params.set("categoria", lugar.tipo);
   if (lugar.tipo === "rua") params.set("celulas", lugar.celulas.join(","));
-  return `/lugar?${params.toString()}`;
+  return `${rota}?${params.toString()}`;
 }
 
 export function Busca() {
-  const { filtros } = useFiltros();
-  const consulta = consultaDosFiltros(filtros);
+  const { consulta } = useFiltros();
+  const [params] = useSearchParams();
+  const rota = params.get("para") === "tabela" ? "/lugar/tabela" : "/lugar";
   const navegar = useNavigate();
   const [texto, setTexto] = useState("");
   const [ativo, setAtivo] = useState(-1);
@@ -30,7 +31,7 @@ export function Busca() {
     document.title = "Ver um lugar · Ocorrências de veículos em SP";
   }, []);
 
-  const escolher = (lugar: Lugar) => navegar(destinoDoLugar(lugar, consulta));
+  const escolher = (lugar: Lugar) => navegar(destinoDoLugar(lugar, consulta, rota));
 
   const aoTeclar = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!resultados.length) return;
@@ -59,7 +60,7 @@ export function Busca() {
   return (
     <section className={estilos.pagina}>
       <div className={estilos.topo}>
-        <Link to={consulta ? `/lugar?${consulta}` : "/lugar"} className={estilos.voltar} aria-label="Voltar ao mapa">
+        <Link to={consulta ? `${rota}?${consulta}` : rota} className={estilos.voltar} aria-label={rota === "/lugar" ? "Voltar ao mapa" : "Voltar à tabela"}>
           <Icone nome="voltar" />
         </Link>
         <h1>Ver um lugar</h1>
