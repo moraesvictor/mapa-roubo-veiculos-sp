@@ -314,11 +314,12 @@
 
 .acoes {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--espaco-3);
 }
 
 .acoes > * {
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .expandir {
@@ -331,7 +332,8 @@
   justify-content: center;
   gap: var(--espaco-2);
   min-height: 48px;
-  padding: 0 var(--espaco-4);
+  padding: 0 var(--espaco-3);
+  white-space: nowrap;
   font: var(--texto-titulo-bloco);
   color: var(--cor-texto-principal);
   text-decoration: none;

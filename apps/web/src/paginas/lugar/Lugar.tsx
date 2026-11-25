@@ -225,12 +225,10 @@ export function Lugar() {
           <Legenda />
         </div>
         <div className={estilos.acoes}>
-          {area ? (
-            <Link className={estilos.botaoLink} to={comConsulta("/lugar/tabela", search.slice(1))}>
-              <Icone nome="lista" tamanho={20} />
-              Ver como tabela
-            </Link>
-          ) : null}
+          <Link className={estilos.botaoLink} to={comConsulta("/lugar/tabela", search.slice(1))}>
+            <Icone nome="lista" tamanho={20} />
+            Ver como tabela
+          </Link>
           <Botao icone="compartilhar" onClick={() => void compartilhar()}>
             Compartilhar
           </Botao>

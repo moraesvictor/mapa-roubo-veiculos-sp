@@ -104,6 +104,13 @@ describe("Tabela", () => {
     expect(screen.getByRole("row", { name: /1–2 km ao sul Menos de 5/ })).toBeTruthy();
     expect(await violacoesDeAcessibilidade(container)).toEqual([]);
   });
+
+  it("sem área mostra o total da cidade e leva pra busca, que volta pra tabela", async () => {
+    const { container } = render(<App caminhoInicial="/lugar/tabela?veiculo=moto" />);
+    expect(await screen.findByText("10,1 mil ocorrências registradas com local na cidade toda, com estes filtros.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Buscar endereço ou CEP/ }).getAttribute("href")).toBe("/lugar/busca?veiculo=moto&para=tabela");
+    expect(await violacoesDeAcessibilidade(container)).toEqual([]);
+  });
 });
 
 describe("filtros na URL", () => {

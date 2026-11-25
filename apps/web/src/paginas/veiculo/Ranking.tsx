@@ -61,24 +61,60 @@ export function Ranking() {
       {ranking?.estado === "erro" ? (
         <p role="alert">Não deu pra carregar o ranking agora.</p>
       ) : (
-        <ol className={estilos.ranking} aria-busy={ranking?.estado !== "pronto"}>
-          {dados?.itens.map((item) => (
-            <li key={item.familia}>
-              <Link to={caminhoDoModelo(veiculo, item.familia)} className={estilos.itemDoRanking} aria-current={seu === item.familia ? "true" : undefined}>
-                <span className={estilos.posicao}>{item.posicao}</span>
-                <span className={estilos.corpoDoItem}>
-                  {seu === item.familia && <span className={estilos.seu}>Seu modelo</span>}
-                  <strong>{item.nome}</strong>
-                  <span className={estilos.trilho} aria-hidden="true">
-                    <span style={{ width: `${(item.total / maior) * 100}%` }} />
+        <>
+          <ol className={estilos.ranking} aria-busy={ranking?.estado !== "pronto"}>
+            {dados?.itens.map((item) => (
+              <li key={item.familia}>
+                <Link to={caminhoDoModelo(veiculo, item.familia)} className={estilos.itemDoRanking} aria-current={seu === item.familia ? "true" : undefined}>
+                  <span className={estilos.posicao}>{item.posicao}</span>
+                  <span className={estilos.corpoDoItem}>
+                    {seu === item.familia && <span className={estilos.seu}>Seu modelo</span>}
+                    <strong>{item.nome}</strong>
+                    <span className={estilos.trilho} aria-hidden="true">
+                      <span style={{ width: `${(item.total / maior) * 100}%` }} />
+                    </span>
+                    <span className={estilos.nota}>{textoDaVariacao(item.variacao)}</span>
                   </span>
-                  <span className={estilos.nota}>{textoDaVariacao(item.variacao)}</span>
-                </span>
-                <span className={estilos.total}>{formatarMilhar(item.total)}</span>
-              </Link>
-            </li>
-          ))}
-        </ol>
+                  <span className={estilos.total}>{formatarMilhar(item.total)}</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+          <table className={estilos.tabelaDoRanking} aria-busy={ranking?.estado !== "pronto"}>
+            <caption className="so-leitor-de-tela">Modelos com mais registros nos últimos 12 meses</caption>
+            <thead>
+              <tr>
+                <th scope="col" aria-sort="ascending">
+                  Posição
+                </th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Ocorrências</th>
+                <th scope="col">Variação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dados?.itens.map((item) => (
+                <tr key={item.familia} aria-current={seu === item.familia ? "true" : undefined}>
+                  <td>{item.posicao}º</td>
+                  <th scope="row">
+                    <Link to={caminhoDoModelo(veiculo, item.familia)}>{item.nome}</Link>
+                    {seu === item.familia && " · "}
+                    {seu === item.familia && <span className={estilos.seu}>Seu modelo</span>}
+                  </th>
+                  <td>
+                    <span className={estilos.celulaComBarra}>
+                      <span className={estilos.trilho} aria-hidden="true">
+                        <span style={{ width: `${(item.total / maior) * 100}%` }} />
+                      </span>
+                      {formatarMilhar(item.total)}
+                    </span>
+                  </td>
+                  <td>{textoDaVariacao(item.variacao)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
       {dados && (
         <p className={estilos.nota}>

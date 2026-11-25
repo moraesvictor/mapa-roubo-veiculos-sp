@@ -316,13 +316,67 @@
   font: var(--texto-titulo-bloco);
 }
 
+.tabelaDoRanking {
+  display: none;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--cor-superficie-padrao);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-cartao);
+  overflow: hidden;
+}
+
+.tabelaDoRanking th,
+.tabelaDoRanking td {
+  padding: var(--espaco-3) var(--espaco-4);
+  font: var(--texto-corpo-padrao);
+  text-align: left;
+  border-bottom: 1px solid var(--cor-borda-padrao);
+}
+
+.tabelaDoRanking thead th {
+  font: var(--texto-rotulo-campo);
+  color: var(--cor-texto-secundario);
+  background: var(--cor-superficie-fundo);
+}
+
+.tabelaDoRanking tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.tabelaDoRanking tbody th a {
+  font: var(--texto-titulo-bloco);
+  color: var(--cor-texto-principal);
+}
+
+.tabelaDoRanking tr[aria-current="true"] > * {
+  background: var(--cor-marca-suave);
+}
+
+.celulaComBarra {
+  display: grid;
+  grid-template-columns: 120px auto;
+  align-items: center;
+  gap: var(--espaco-3);
+  font: var(--texto-titulo-bloco);
+}
+
 @media (min-width: 1024px) {
+  .ranking {
+    display: none;
+  }
+
+  .tabelaDoRanking {
+    display: table;
+  }
+
   .grade {
     grid-template-columns: 1fr 1fr;
     gap: var(--espaco-6);
   }
 
   .pagina:has(.ranking) {
-    max-width: 760px;
+    max-width: 960px;
   }
 }

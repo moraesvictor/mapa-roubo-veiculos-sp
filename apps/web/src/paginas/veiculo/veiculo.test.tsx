@@ -90,12 +90,14 @@ describe("Meu veículo", () => {
 describe("Ranking", () => {
   it("lista com variação, marca o seu modelo e mostra outros e não identificados", async () => {
     const { container } = render(<App caminhoInicial="/ranking?veiculo=moto&seu=HONDA%20CG%20160" />);
-    expect(await screen.findByText("↓ caiu 19% vs. 12 meses anteriores")).toBeTruthy();
-    expect(screen.getByText("= estável, +3% vs. 12 meses anteriores")).toBeTruthy();
-    expect(screen.getByText("sem comparação com os 12 meses anteriores")).toBeTruthy();
-    expect(screen.getByText("Seu modelo")).toBeTruthy();
+    expect(await screen.findAllByText("↓ caiu 19% vs. 12 meses anteriores")).toHaveLength(2);
+    expect(screen.getAllByText("= estável, +3% vs. 12 meses anteriores")).toHaveLength(2);
+    expect(screen.getAllByText("sem comparação com os 12 meses anteriores")).toHaveLength(2);
+    expect(screen.getByRole("columnheader", { name: "Posição" }).getAttribute("aria-sort")).toBe("ascending");
+    expect(screen.getByRole("row", { name: /1º Honda CG 160 · Seu modelo 3,9 mil/ })).toBeTruthy();
+    expect(screen.getAllByText("Seu modelo")).toHaveLength(2);
     expect(screen.getByText(/268 modelos, 472 ocorrências · Modelo não identificado no boletim: 215/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Honda CG 160/ }).getAttribute("href")).toBe("/meu-veiculo/moto/HONDA%20CG%20160");
+    for (const link of screen.getAllByRole("link", { name: /Honda CG 160/ })) expect(link.getAttribute("href")).toBe("/meu-veiculo/moto/HONDA%20CG%20160");
     expect(await violacoesDeAcessibilidade(container)).toEqual([]);
   });
 });
